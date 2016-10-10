@@ -1,0 +1,3 @@
+[submodule "include/DynamicLoader"]
+	path = include/DynamicLoader
+	url = https://github.com/shunonymous/DynamicLoader
