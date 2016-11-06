@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(mirmidivi)
+project(mirmidivi CXX C)
 
 option(MIRMIDIVI_INSTALL_DIR "Set install path." /usr)
 
@@ -13,6 +13,13 @@ set (VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 message("mirmidivi will install to ${MIRMIDIVI_INSTALL_DIR}")
 set(MIRMIDIVI_EXECUTABLE_DIR ${MIRMIDIVI_INSTALL_DIR}/bin)
 set(MIRMIDIVI_LIBRARY_DIR ${MIRMIDIVI_INSTALL_DIR}/lib)
+
+# Local CMake modules
+set(CMAKE_MODULE_PATH
+  "${CMAKE_MODULE_PATH}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+  )
 
 ### Set depended libraries
 # Thread
@@ -29,16 +36,13 @@ find_package(Boost 1.32 COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Poco
-set(CMAKE_MODULE_PATH
-  "${CMAKE_MODULE_PATH}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
-  )
-
 include(FindPoco)
 
 find_package(Poco REQUIRED Foundation)
 include_directories(${Poco_DIR})
+
+### External projects are here
+add_subdirectory(lib/)
 
 ### C++ Version
 set(CMAKE_CXX_STANDARD 14)
@@ -47,6 +51,5 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include/)
 
-add_subdirectory(lib/)
 add_subdirectory(src/)
 
