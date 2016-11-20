@@ -20,9 +20,14 @@
 #include <thread>
 #include <csignal>
 
+#include <jdksmidi/world.h>
+#include <jdksmidi/midi.h>
+#include <jdksmidi/msg.h>
+#include <jdksmidi/sysex.h>
+#include <jdksmidi/parser.h>
+
 #include "DynamicLoader/DynamicLoader.hpp"
 #include "mirmidivi/Options.hpp"
-#include "mirmidivi/MidiDataStructure.hpp"
 
 bool QuitFlag;
 
@@ -45,7 +50,7 @@ int main(int argc, char** argv)
     // Set options
     CoreEnv = parseOptions(argc, argv);
 
-    Midi MidiInData;
+    jdksmidi::MIDIMessage MidiInData;
 
     // Using MIDI API
     std::cout << "MIDI API:" << CoreEnv.CurrentMidiModule << std::endl;
@@ -53,12 +58,12 @@ int main(int argc, char** argv)
     // Dynamic load MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
     MidiInLibrary.setupLibrary(CoreEnv.CurrentMidiModule,"MidiIn");
-    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Environment, Midi&,bool&>();
+    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Environment, jdksmidi::MIDIMessage&,bool&>();
 
     // Dynamic load rendering library
     DynamicLoadLibray RenderingLibrary;
     RenderingLibrary.setupLibrary(CoreEnv.CurrentRenderModule,"Rendering");
-    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Environment, Midi&, bool&>();
+    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Environment, jdksmidi::MIDIMessage&, bool&>();
 
     // Launch threads
     std::thread MidiInThread(MidiIn, CoreEnv, std::ref(MidiInData), std::ref(QuitFlag));

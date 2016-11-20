@@ -19,6 +19,12 @@
 #include <iostream>
 #include <iomanip>
 
+#include <jdksmidi/world.h>
+#include <jdksmidi/midi.h>
+#include <jdksmidi/msg.h>
+#include <jdksmidi/sysex.h>
+#include <jdksmidi/parser.h>
+
 #include "mirmidivi/MidiDataStructure.hpp"
 #include "mirmidivi/Options.hpp"
 #include "mirmidivi/sleep.hpp"
@@ -27,12 +33,21 @@ namespace mirmidivi
 {
     namespace PrintText
     {
-	void PrintMessage(Environment CoreEnv, Midi& MidiInData, bool& QuitFlag)
+	void PrintMessage(Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 	{
 	    auto duration = 1s / CoreEnv.FramePerSecond;
+	    char Text[129];
 	    while(!QuitFlag)
 	    {
-		std::cout << std::hex << MidiInData.getRawData() << "\r" << std::flush;
+		MidiInData.MsgToText(Text);
+/*		std::cout << "MSG:" << std::hex << MidiInData.GetStatus();
+		if (MidiInData.GetLength() >= 2)
+		    std::cout << MidiInData.GetByte1();
+		if (MidiInData.GetLength() >= 3)
+		    std::cout << MidiInData.GetByte2();
+*/
+		
+		std::cout << Text << "\r" << std::flush;
 		sleep(duration);
 	    }
 	    std::cout << std::endl;
@@ -41,7 +56,7 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Environment CoreEnv, mirmidivi::Midi& MidiInData, bool& QuitFlag)
+extern "C" void Rendering(mirmidivi::Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
     mirmidivi::PrintText::PrintMessage(CoreEnv, MidiInData, QuitFlag);
