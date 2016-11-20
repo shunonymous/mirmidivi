@@ -20,7 +20,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <signal.h>
-#include <stk/RtMidi.h>
+#include <RtMidi.h>
 
 #include "mirmidivi/MidiDataStructure.hpp"
 #include "mirmidivi/Options.hpp"
