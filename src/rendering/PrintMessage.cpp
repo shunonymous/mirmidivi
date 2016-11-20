@@ -25,7 +25,6 @@
 #include <jdksmidi/sysex.h>
 #include <jdksmidi/parser.h>
 
-#include "mirmidivi/MidiDataStructure.hpp"
 #include "mirmidivi/Options.hpp"
 #include "mirmidivi/sleep.hpp"
 
