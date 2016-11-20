@@ -22,7 +22,12 @@
 #include <signal.h>
 #include <RtMidi.h>
 
-#include "mirmidivi/MidiDataStructure.hpp"
+#include <jdksmidi/world.h>
+#include <jdksmidi/midi.h>
+#include <jdksmidi/msg.h>
+#include <jdksmidi/sysex.h>
+#include <jdksmidi/parser.h>
+
 #include "mirmidivi/Options.hpp"
 #include "mirmidivi/sleep.hpp"
 
@@ -30,12 +35,15 @@ namespace mirmidivi
 {
     namespace RtMidi
     {
-	void MidiIn(Midi& MidiInData, bool& QuitFlag)
+	void MidiIn(jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 	{
 	    RtMidiIn *midiin = new RtMidiIn();
 	    std::vector<unsigned char> message;
 	    int nBytes,i;
 	    double stamp;
+	    
+	    // From jdksmidi/examples/jdksmidi_test_parse.cpp
+	    jdksmidi::MIDIParser Parser ( 32 * 1024 );
 
 	    std::cout << "Start" << std::endl;
 	    std::vector<::RtMidi::Api> CompiledAPI;
@@ -63,7 +71,7 @@ namespace mirmidivi
 		stamp = midiin->getMessage(&message);
 		nBytes = message.size();
 		for(i=0;i<nBytes;i++)
-		    MidiInData.syncData(static_cast<int>(message[i]));
+		    Parser.Parse(message[i], &MidiInData);
 		sleep(10us);
 	    }
 
@@ -74,7 +82,7 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void MidiIn(mirmidivi::Environment CoreEnv, mirmidivi::Midi& MidiInData, bool& QuitFlag)
+extern "C" void MidiIn(mirmidivi::Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 {
     std::cout << "MidiIn called" << std::endl;
     mirmidivi::RtMidi::MidiIn(MidiInData, QuitFlag);

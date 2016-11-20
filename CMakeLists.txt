@@ -14,6 +14,9 @@ message("mirmidivi will install to ${MIRMIDIVI_INSTALL_DIR}")
 set(MIRMIDIVI_EXECUTABLE_DIR ${MIRMIDIVI_INSTALL_DIR}/bin)
 set(MIRMIDIVI_LIBRARY_DIR ${MIRMIDIVI_INSTALL_DIR}/lib)
 
+# PIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Local CMake modules
 set(CMAKE_MODULE_PATH
   "${CMAKE_MODULE_PATH}"
@@ -50,6 +53,7 @@ set(CMAKE_CXX_STANDARD 14)
 # Build
 
 include_directories(include/)
+include_directories(lib/jdksmidi/include/)
 
 add_subdirectory(src/)
 
