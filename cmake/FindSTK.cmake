@@ -10,6 +10,11 @@
 
 # Try to serch STK Libraries and headers
 find_path(STK_INCLUDE_DIR stk/Stk.h)
+find_path(RTMIDI_INCLUDE_DIR NAMES RtMidi.h
+  PATH_SUFFIXES rtmidi)
+find_path(RTAUDIO_INCLUDE_DIR NAMES RtAudio.h
+  PATH_SUFFIXES rtaudio)
+
 find_library(STK_LIBRARY stk)
 find_library(RTMIDI_LIBRARY rtmidi)
 find_library(RTAUDIO_LIBRARY rtaudio)
