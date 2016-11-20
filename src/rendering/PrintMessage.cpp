@@ -1,5 +1,5 @@
 /*
- * text.cpp
+ * PrintMessage.cpp
  *
  * Copyright (C) 2016 Shun Terabayashi <shunonymous@gmail.com>
  * 
