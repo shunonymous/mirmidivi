@@ -1,5 +1,5 @@
 /*
- * mirmidvi.hpp
+ * mirmidivi.hpp
  *
  * Copyright (C) 2015-2017 Shun Terabayashi <shunonymous@gmail.com>
  * 
