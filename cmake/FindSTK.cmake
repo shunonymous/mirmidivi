@@ -1,5 +1,5 @@
 # FindModule The Synthesis ToolKit include RtAudio and RtMidi. 
-# STK:
+# Stk:
 #   STK_FOUND        - True if headers and requested libraries were found
 #   STK_LIBRARY      - STK library to be link
 #   STK_INCLUDE_DIR  - STK include directory
@@ -7,22 +7,38 @@
 # RtMidi:
 #   RTMIDI_FOUND     - True if headers and requested libraries were found
 #   RTMIDI_LIBRARY   - RtMidi library to be link with platform specify libraries
+# RtAudio:
+#   RTAUDIO_FOUND     - True if headers and requested libraries were found
+#   RTAUDIO_LIBRARY   - RtAudio library to be link with platform specify libraries
 
-# Try to serch STK Libraries and headers
+# Try to serch Stk Libraries and headers
 find_path(STK_INCLUDE_DIR stk/Stk.h)
-find_path(RTMIDI_INCLUDE_DIR NAMES RtMidi.h
-  PATH_SUFFIXES rtmidi)
-find_path(RTAUDIO_INCLUDE_DIR NAMES RtAudio.h
-  PATH_SUFFIXES rtaudio)
-
 find_library(STK_LIBRARY stk)
+find_path(RTMIDI_INCLUDE_DIR NAMES RtMidi.h PATH_SUFFIXES stk)
+find_path(RTAUDIO_INCLUDE_DIR RtAudio.h PATH_SUFFIXES stk)
 find_library(RTMIDI_LIBRARY rtmidi)
 find_library(RTAUDIO_LIBRARY rtaudio)
 
-# Set found flags
+# Set STK_FOUND
 if(STK_LIBRARY AND STK_INCLUDE_DIR)
   set(STK_FOUND true)
+endif()
+
+# If RtMidi and RtAudio was not found, use Stk's one.
+if(STK_FOUND)
+  if(NOT RTMIDI_LIBRARY)
+    find_library(RTMIDI_LIBRARY stk)
+  endif()
+  if(NOT RTAUDIO_LIBRARY)
+    find_library(RTAUDIO_LIBRARY stk)
+  endif()
+endif()
+
+# Set <Library>_FOUND
+if(RTMIDI_LIBRARY AND RTMIDI_INCLUDE_DIR)
   set(RTMIDI_FOUND true)
+endif()
+if(RTAUDIO_LIBRARY AND RTAUDIO_INCLUDE_DIR)
   set(RTAUDIO_FOUND true)
 endif()
 
