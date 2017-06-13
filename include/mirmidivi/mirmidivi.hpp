@@ -1,7 +1,7 @@
 /*
- * midmidivi.hpp - Declare class and functions
+ * mirmidvi.hpp
  *
- * Copyright (C) 2015-2016 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2015-2017 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,33 +21,38 @@
 
 #include <string>
 
+#include <jdksmidi/world.h>
+#include <jdksmidi/midi.h>
+#include <jdksmidi/msg.h>
+#include <jdksmidi/sysex.h>
+#include <jdksmidi/parser.h>
+
 namespace mirmidivi
 {
-    class MidiEnvironment
+    // Store options from command-line args (or other)
+    class Option
     {
     public:
-	bool RealTime;
+	// bool RealTime;
 	// bool RtMidi;
-	unsigned int BufferMilliSecond;
-    }; // class MidiEnvironment
-
-    class RenderEnvironment
-    {
-    public:
 	float FramePerSecond = 30.0;
 	int VertexResolution;
 	int HorizonalResolution;
-	bool FullScreen;
-    }; // class RenderEnvironment
-
-    class Environment : public MidiEnvironment,public RenderEnvironment
-    {
-    public:
-	std::string CurrentMidiModule;
-	std::string CurrentRenderModule;
+	// bool FullScreen;
+	std::string InputMidiAPI;
+	std::string RenderAPI;
     }; // class Environment : public MidiEnvironment,public RenderEnvironment
 
-    Environment parseOptions(int argc,char** argv);
+    Option parseOptions(int argc, char** argv);
+
+    class Midi
+    {
+    private:
+	jdksmidi::MIDIMessage InputMidiData;
+	std::vector<jdksmidi::MIDIMessage> StoredMidi;
+    public:
+	
+    };	
 
 } // namespace mirmidivi
 

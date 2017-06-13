@@ -28,7 +28,7 @@
 #include <jdksmidi/sysex.h>
 #include <jdksmidi/parser.h>
 
-#include "mirmidivi/Options.hpp"
+#include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
 
 namespace mirmidivi
@@ -82,7 +82,7 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void MidiIn(mirmidivi::Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+extern "C" void MidiIn(mirmidivi::Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 {
     std::cout << "MidiIn called" << std::endl;
     mirmidivi::RtMidi::MidiIn(MidiInData, QuitFlag);

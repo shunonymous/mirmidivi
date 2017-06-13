@@ -25,16 +25,16 @@
 #include <jdksmidi/sysex.h>
 #include <jdksmidi/parser.h>
 
-#include "mirmidivi/Options.hpp"
+#include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
 
 namespace mirmidivi
 {
     namespace PrintText
     {
-	void PrintMessage(Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+	void PrintMessage(Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 	{
-	    auto duration = 1s / CoreEnv.FramePerSecond;
+	    auto duration = 1s / Options.FramePerSecond;
 	    char Text[129];
 	    while(!QuitFlag)
 	    {
@@ -55,8 +55,8 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Environment CoreEnv, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+extern "C" void Rendering(mirmidivi::Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
-    mirmidivi::PrintText::PrintMessage(CoreEnv, MidiInData, QuitFlag);
+    mirmidivi::PrintText::PrintMessage(Options, MidiInData, QuitFlag);
 }

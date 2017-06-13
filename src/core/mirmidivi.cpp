@@ -1,7 +1,7 @@
 /*
  * mirmidivi is rendering midi as visual
  *
- * Copyright (C) 2016 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2016-2017 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,13 @@
 #include <thread>
 #include <csignal>
 
-#include <jdksmidi/world.h>
-#include <jdksmidi/midi.h>
-#include <jdksmidi/msg.h>
-#include <jdksmidi/sysex.h>
-#include <jdksmidi/parser.h>
-
+#include "mirmidivi/mirmidivi.hpp"
 #include "DynamicLoader/DynamicLoader.hpp"
-#include "mirmidivi/Options.hpp"
 
+
+//////////////////////////////////////////////////////////////
+// Handle SIGINT signal (Ctrl+C), for quit all loop thread. //
+//////////////////////////////////////////////////////////////
 bool QuitFlag;
 
 void Quit(int Signal)
@@ -37,38 +35,41 @@ void Quit(int Signal)
     std::cout << "Interrupt." << std::endl;
 }
 
+
+
 int main(int argc, char** argv)
 {
     using namespace mirmidivi;
     using namespace DynamicLoader;
-    Environment CoreEnv;
+    Option Options;
 
     // Signal handling
     QuitFlag = false;
     std::signal(SIGINT, Quit);
 
     // Set options
-    CoreEnv = parseOptions(argc, argv);
+    Options = parseOptions(argc, argv);
 
     jdksmidi::MIDIMessage MidiInData;
 
     // Using MIDI API
-    std::cout << "MIDI API:" << CoreEnv.CurrentMidiModule << std::endl;
+    std::cout << "MIDI API:" << Options.InputMidiAPI << std::endl;
 
-    // Dynamic load MIDI-In Library
+    // Dynamic loading MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
-    MidiInLibrary.setupLibrary(CoreEnv.CurrentMidiModule,"MidiIn");
-    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Environment, jdksmidi::MIDIMessage&,bool&>();
+    MidiInLibrary.setupLibrary(Options.InputMidiAPI, "MidiIn");
+    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, jdksmidi::MIDIMessage&, bool&>();
 
-    // Dynamic load rendering library
+    // Dynamic loading rendering library
     DynamicLoadLibray RenderingLibrary;
-    RenderingLibrary.setupLibrary(CoreEnv.CurrentRenderModule,"Rendering");
-    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Environment, jdksmidi::MIDIMessage&, bool&>();
+    RenderingLibrary.setupLibrary(Options.RenderAPI,"Rendering");
+    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, jdksmidi::MIDIMessage&, bool&>();
 
     // Launch threads
-    std::thread MidiInThread(MidiIn, CoreEnv, std::ref(MidiInData), std::ref(QuitFlag));
-    std::thread RenderingThread(Rendering, CoreEnv, std::ref(MidiInData), std::ref(QuitFlag));
+    std::thread MidiInThread(MidiIn, Options, std::ref(MidiInData), std::ref(QuitFlag));
+    std::thread RenderingThread(Rendering, Options, std::ref(MidiInData), std::ref(QuitFlag));
 
+    // Wait thread exit
     MidiInThread.join();
     RenderingThread.join();
 }

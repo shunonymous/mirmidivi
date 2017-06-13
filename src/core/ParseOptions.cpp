@@ -26,15 +26,15 @@
 #include <vector>
 #include <boost/program_options.hpp>
 
-#include "mirmidivi/Options.hpp"
+#include "mirmidivi/mirmidivi.hpp"
 
 namespace mirmidivi
 {
-    Environment parseOptions(int argc,char** argv)
+    Option parseOptions(int argc,char** argv)
     {
 	namespace po = boost::program_options;
 
-	Environment CoreEnv;
+	Option Options;
 	bool ExitFlag = false;
 
 	// Declare mirmidivi options 
@@ -50,13 +50,13 @@ namespace mirmidivi
 	    // ("config-module,x",po::value<std::string>(),"Configure module. [MODULE:OPTIONS]")
 	    ;
 	// About MIDI
-	Midi.add_options()
-	    ("realtime,r","Enable realtime mode.")
-	    ("buffer,b",po::value<unsigned int>(&CoreEnv.BufferMilliSecond),"Set buffer length in ms.")
-	    ;
+//	Midi.add_options()
+//	    ("realtime,r","Enable realtime mode.")
+//	    ("buffer,b",po::value<unsigned int>(&Options.BufferMilliSecond),"Set buffer length in ms.")
+//	    ;
 	// About render
 	Render.add_options()
-	    ("fps,f",po::value<float>(&CoreEnv.FramePerSecond),"Set frame per second.")
+	    ("fps,f",po::value<float>(&Options.FramePerSecond),"Set frame per second.")
 	    ("size,s",po::value<std::vector<int> >()->multitoken(),"Set drawing region size to use [(horizonal) (vertex)]")
 	    ;
 	
@@ -79,16 +79,16 @@ namespace mirmidivi
 	    }
 	    
 	    // Realtime Mode
-	    if(vm.count("realtime"))
-		CoreEnv.RealTime = true;
+//	    if(vm.count("realtime"))
+//		Options.RealTime = true;
 
 	    // Drow region(flame) size
 	    if(vm.count("size"))
 	    {
 		if(vm["size"].as<std::vector<int>>().size() == 2)
 		{
-		    CoreEnv.HorizonalResolution = vm["size"].as<std::vector<int> >()[0];
-		    CoreEnv.VertexResolution = vm["size"].as<std::vector<int> >()[1];
+		    Options.HorizonalResolution = vm["size"].as<std::vector<int> >()[0];
+		    Options.VertexResolution = vm["size"].as<std::vector<int> >()[1];
 		}
 		else
 		{
@@ -102,7 +102,7 @@ namespace mirmidivi
 	    {
 		API = vm["midi-api"].as<std::string>();
 		if(API == "RtMidi")
-		    CoreEnv.CurrentMidiModule = "RtMidi";
+		    Options.InputMidiAPI = "RtMidi";
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["midi-api"].as<std::string>() << " for midi-in." << std::endl;
@@ -110,7 +110,7 @@ namespace mirmidivi
 		}
 	    }else{
 		// If nothing to set midi-api
-		CoreEnv.CurrentMidiModule = "RtMidi";
+		Options.InputMidiAPI = "RtMidi";
 	    }
 
 	    // Rendering API
@@ -118,7 +118,7 @@ namespace mirmidivi
 	    {
 		API = vm["rend-api"].as<std::string>();
 		if(API == "text")
-		    CoreEnv.CurrentRenderModule = "PrintMessage";
+		    Options.RenderAPI = "PrintMessage";
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["rend-api"].as<std::string>() << " for rendering." << std::endl;
@@ -126,11 +126,11 @@ namespace mirmidivi
 		}
 	    }else{
 		// If nothing to set rend-api
-		CoreEnv.CurrentRenderModule = "PrintMessage";
+		Options.RenderAPI = "PrintMessage";
 	    }
 	    // Fullscreen
-	    if(vm.count("fullscreen"))
-		CoreEnv.FullScreen = true;
+//	    if(vm.count("fullscreen"))
+//		Options.FullScreen = true;
 	    
 	} // try
 
@@ -151,6 +151,6 @@ namespace mirmidivi
 	if(ExitFlag == true)
 	    exit(1);
 
-	return CoreEnv;
+	return Options;
     } // bool ParseOptions(int argc,char **argv)
 } // namespace mirmidivi
