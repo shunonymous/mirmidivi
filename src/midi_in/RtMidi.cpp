@@ -1,7 +1,7 @@
 /*
  * RtMidi.cpp - Input MIDI using RtMidi for mirmidivi
  *
- * Copyright (C) 2016 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2016-2017 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,70 +20,51 @@
 #include <iomanip>
 #include <cstdlib>
 #include <signal.h>
-#include <RtMidi.h>
-
-#include <jdksmidi/world.h>
-#include <jdksmidi/midi.h>
-#include <jdksmidi/msg.h>
-#include <jdksmidi/sysex.h>
-#include <jdksmidi/parser.h>
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
-
+#include "mirmidivi/midi.hpp"
 namespace mirmidivi
 {
     namespace RtMidi
     {
-	void MidiIn(jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+	void MidiIn(MidiReceiver& MidiReceivedData, MidiUtils& MidiInData, bool& QuitFlag)
 	{
-	    RtMidiIn *midiin = new RtMidiIn();
-	    std::vector<unsigned char> message;
-	    int nBytes,i;
 	    double stamp;
-	    
-	    // From jdksmidi/examples/jdksmidi_test_parse.cpp
-	    jdksmidi::MIDIParser Parser ( 32 * 1024 );
+	    jdksmidi::MIDIClockTime t;
 
-	    std::cout << "Start" << std::endl;
-	    std::vector<::RtMidi::Api> CompiledAPI;
-	    midiin->getCompiledApi(CompiledAPI);
-	    std::cout << "Enable ";
-	    for(auto elem:CompiledAPI)
-		std::cout << elem;
-	    std::cout << std::endl;
+	    std::vector<unsigned char> PrevMessage;
+	    auto MidiTimePoint = std::chrono::system_clock::now();
 
-	    // Check available ports.
-	    unsigned int nPorts = midiin->getPortCount();
-	    std::cout << "Check available ports." << std::endl;
-	    if (nPorts == 0){
-		std::cout << "No ports available!" << std::endl;
-		goto cleanup;
-	    }
-
-	    // Open a Midi input port
-	    midiin->openPort(0,"mirmidivi");
-	    // Don't ignore sysex, timing, or active sending messages.
-	    midiin->ignoreTypes(false,false,false);
-	    // Periodically check input queue.
-//	    std::cout <<"Reading MIDI from port with " << midiin->getCurrentApi() <<  "... quit with Ctrl+C." << std::endl;
 	    while(!QuitFlag){
-		stamp = midiin->getMessage(&message);
-		nBytes = message.size();
-		for(i=0;i<nBytes;i++)
-		    Parser.Parse(message[i], &MidiInData);
-		sleep(10us);
-	    }
+		// Get MIDI message
+		stamp = MidiReceivedData.MidiIn->getMessage(&MidiReceivedData.MidiRawMessage);
 
-	cleanup:
-	    delete midiin;
-	} // void Initialize
+		// Store message if message was changed
+		if(PrevMessage != MidiReceivedData.MidiRawMessage)
+		{
+		    // Past time in MIDI tick
+		    t = (std::chrono::duration_cast<std::chrono::nanoseconds>
+			 (std::chrono::system_clock::now() - MidiTimePoint).count())
+			/ (60.00 * 1e9 / MidiInData.getBPM() / MidiInData.getMidiTimeBase()
+			    );
+		    
+		    PrevMessage = MidiReceivedData.MidiRawMessage;
+
+		    // Store message 
+		    MidiReceivedData.Mutex.lock();
+		    MidiReceivedData.MidiCachedMessages.push_back(std::make_pair(t, MidiReceivedData.MidiRawMessage));
+		    MidiReceivedData.Mutex.unlock();
+		}
+		sleep(10us);
+	    } // while(!QuitFlag)
+	} // void MidiIn
     } // namespace RtMidi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void MidiIn(mirmidivi::Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+extern "C" void MidiIn(mirmidivi::Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 {
     std::cout << "MidiIn called" << std::endl;
-    mirmidivi::RtMidi::MidiIn(MidiInData, QuitFlag);
+    mirmidivi::RtMidi::MidiIn(MidiReceivedData, MidiInData, QuitFlag);
 }

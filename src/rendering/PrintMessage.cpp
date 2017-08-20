@@ -19,35 +19,30 @@
 #include <iostream>
 #include <iomanip>
 
-#include <jdksmidi/world.h>
-#include <jdksmidi/midi.h>
-#include <jdksmidi/msg.h>
-#include <jdksmidi/sysex.h>
-#include <jdksmidi/parser.h>
-
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
+#include "mirmidivi/midi.hpp"
 
 namespace mirmidivi
 {
     namespace PrintText
     {
-	void PrintMessage(Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+	void PrintMessage(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 	{
-	    auto duration = 1s / Options.FramePerSecond;
+
 	    char Text[129];
+	    jdksmidi::MIDIParser Parser(32 * 1024);
+
 	    while(!QuitFlag)
 	    {
-		MidiInData.MsgToText(Text);
-/*		std::cout << "MSG:" << std::hex << MidiInData.GetStatus();
-		if (MidiInData.GetLength() >= 2)
-		    std::cout << MidiInData.GetByte1();
-		if (MidiInData.GetLength() >= 3)
-		    std::cout << MidiInData.GetByte2();
-*/
+		auto MidiCurrentMessage = MidiReceivedData.MidiRawMessage;
+		for(int i=0; i<MidiCurrentMessage.size(); ++i)
+		    Parser.Parse(MidiCurrentMessage[i], &MidiInData.MidiParsedMessage);
+
+		MidiInData.MidiParsedMessage.MsgToText(Text);
 		
 		std::cout << Text << "\r" << std::flush;
-		sleep(duration);
+		sleep(10us);
 	    }
 	    std::cout << std::endl;
 	} // void PrintMessage
@@ -55,8 +50,8 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Option Options, jdksmidi::MIDIMessage& MidiInData, bool& QuitFlag)
+extern "C" void Rendering(mirmidivi::Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
-    mirmidivi::PrintText::PrintMessage(Options, MidiInData, QuitFlag);
+    mirmidivi::PrintText::PrintMessage(Options, MidiReceivedData, MidiInData, QuitFlag);
 }

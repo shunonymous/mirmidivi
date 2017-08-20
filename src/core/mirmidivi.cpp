@@ -21,6 +21,8 @@
 #include <csignal>
 
 #include "mirmidivi/mirmidivi.hpp"
+#include "mirmidivi/midi.hpp"
+
 #include "DynamicLoader/DynamicLoader.hpp"
 
 
@@ -50,7 +52,9 @@ int main(int argc, char** argv)
     // Set options
     Options = parseOptions(argc, argv);
 
-    jdksmidi::MIDIMessage MidiInData;
+    // Midi Data
+    MidiReceiver MidiReceivedData;
+    MidiUtils MidiInData;
 
     // Using MIDI API
     std::cout << "MIDI API:" << Options.InputMidiAPI << std::endl;
@@ -58,16 +62,16 @@ int main(int argc, char** argv)
     // Dynamic loading MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
     MidiInLibrary.setupLibrary(Options.InputMidiAPI, "MidiIn");
-    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, jdksmidi::MIDIMessage&, bool&>();
+    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Dynamic loading rendering library
     DynamicLoadLibray RenderingLibrary;
     RenderingLibrary.setupLibrary(Options.RenderAPI,"Rendering");
-    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, jdksmidi::MIDIMessage&, bool&>();
+    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Launch threads
-    std::thread MidiInThread(MidiIn, Options, std::ref(MidiInData), std::ref(QuitFlag));
-    std::thread RenderingThread(Rendering, Options, std::ref(MidiInData), std::ref(QuitFlag));
+    std::thread MidiInThread(MidiIn, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));
+    std::thread RenderingThread(Rendering, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));
 
     // Wait thread exit
     MidiInThread.join();
