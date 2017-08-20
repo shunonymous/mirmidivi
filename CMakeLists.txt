@@ -3,6 +3,9 @@ project(mirmidivi CXX C)
 
 option(MIRMIDIVI_INSTALL_DIR "Set install path." /usr)
 
+### C++ Version
+set(CMAKE_CXX_STANDARD 14)
+
 # Version
 set (VERSION_MAJOR "0")
 set (VERSION_MINOR "0")
@@ -44,6 +47,15 @@ include(FindPoco)
 find_package(Poco REQUIRED Foundation)
 include_directories(${Poco_DIR})
 
+# RtMidi
+find_package(RtMidi)
+if(RTMIDI_FOUND)
+  include_directories(${RTMIDI_INCLUDE_DIR})
+endif()
+# include path
+include_directories(include/)
+include_directories(lib/jdksmidi/include)
+
 ### External projects are here
 add_subdirectory(lib/)
 
@@ -51,9 +63,5 @@ add_subdirectory(lib/)
 set(CMAKE_CXX_STANDARD 14)
 
 # Build
-
-include_directories(include/)
-include_directories(lib/jdksmidi/include/)
-
 add_subdirectory(src/)
 

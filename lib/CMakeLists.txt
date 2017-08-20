@@ -1,5 +1,8 @@
 ### Build external libraries
 
 # jdksmidi
+include_directories(jdksmidi/include)
 add_subdirectory(jdksmidi/)
-include_directories(./jdksmidi/include/)
+
+# Library for mirmidivi
+add_subdirectory(mirmidivi/)

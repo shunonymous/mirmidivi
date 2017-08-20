@@ -14,33 +14,44 @@
 # Try to serch Stk Libraries and headers
 find_path(STK_INCLUDE_DIR stk/Stk.h)
 find_library(STK_LIBRARY stk)
-find_path(RTMIDI_INCLUDE_DIR NAMES RtMidi.h PATH_SUFFIXES stk)
-find_path(RTAUDIO_INCLUDE_DIR RtAudio.h PATH_SUFFIXES stk)
+find_path(RTMIDI_INCLUDE_DIR NAMES RtMidi.h)
+find_path(RTAUDIO_INCLUDE_DIR RtAudio.h)
 find_library(RTMIDI_LIBRARY rtmidi)
 find_library(RTAUDIO_LIBRARY rtaudio)
 
 # Set STK_FOUND
 if(STK_LIBRARY AND STK_INCLUDE_DIR)
   set(STK_FOUND true)
+  message(STATUS "Found Synthesis ToolKit library: ${STK_LIBRARY}")
 endif()
 
 # If RtMidi and RtAudio was not found, use Stk's one.
 if(STK_FOUND)
-  if(NOT RTMIDI_LIBRARY)
+  if(NOT RTMIDI_LIBRARY OR NOT RTMIDI_INCLUDE_DIR)
     find_library(RTMIDI_LIBRARY stk)
+    find_path(RTMIDI_INCLUDE_DIR NAMES NAMES RtMidi.h PATH_SUFFIXES stk)
+    message(STATUS "Use RtMidi in STK")
+  else()
+    message(STATUS "Found RtMidi: ${RTMIDI_LIBRARY}")
   endif()
-  if(NOT RTAUDIO_LIBRARY)
+  if(NOT RTAUDIO_LIBRARY OR NOT RTAUDIO_INCLUDE_DIR)
     find_library(RTAUDIO_LIBRARY stk)
+    find_path(RTAUDIO_INCLUDE_DIR NAMES RtAudio.h PATH_SUFFIXES stk)
+    message(STATUS "Use RtAudio in STK")
+  else()
+    message(STATUS "Found RtAudio: ${RTAUDIO_LIBRARY}")
   endif()
 endif()
 
 # Set <Library>_FOUND
 if(RTMIDI_LIBRARY AND RTMIDI_INCLUDE_DIR)
   set(RTMIDI_FOUND true)
+  message("RtMidi include:${RTMIDI_INCLUDE_DIR}")
 endif()
 if(RTAUDIO_LIBRARY AND RTAUDIO_INCLUDE_DIR)
   set(RTAUDIO_FOUND true)
 endif()
+  message(STATUS "RtMidi include:${RTMIDI_INCLUDE_DIR}")
 
 # Set libraries per platforms
 if(STK_FOUND)
