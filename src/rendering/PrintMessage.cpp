@@ -44,7 +44,7 @@ namespace mirmidivi
 		MidiInData.MidiParsedMessage.MsgToText(Text);
 		
 		std::cout << Text << "\r" << std::flush;
-		sleep(10us);
+		sleep(1ms);
 	    }
 	    std::cout << std::endl;
 	} // void PrintMessage
