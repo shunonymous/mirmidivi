@@ -82,6 +82,12 @@ namespace mirmidivi
 	MidiTracks->GetTrack(0)->PutEvent(m);
     }
 
+    jdksmidi::MIDIClockTime MidiUtils::TimeToTick(std::chrono::system_clock::duration Time)
+    {
+	return (std::chrono::duration_cast<std::chrono::microseconds>(Time).count()
+		/ Tempo / getMidiTimeBase());
+    }
+
     MidiUtils::MidiUtils()
     {
 	jdksmidiInit();

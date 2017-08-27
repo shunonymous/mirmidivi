@@ -37,7 +37,6 @@ namespace mirmidivi
     public:
 	std::unique_ptr<RtMidiIn> MidiIn;
 	std::vector<unsigned char> MidiRawMessage;
-	std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>> MidiCachedMessages;
 	double stamp;
 	std::mutex Mutex;
 	auto getCompiledApi() { return CompiledAPI; }
@@ -65,6 +64,7 @@ namespace mirmidivi
 	void setBPM(int bpm);
 	auto getBPM() { return BeatsPerMinute; }
 	auto getNumTracks() { return Num_Tracks; }
+	::jdksmidi::MIDIClockTime TimeToTick(std::chrono::system_clock::duration Time);
 	
 	MidiUtils();
 	MidiUtils(int num_trks, int TimeBase);

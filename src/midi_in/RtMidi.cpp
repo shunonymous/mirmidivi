@@ -20,6 +20,8 @@
 #include <iomanip>
 #include <cstdlib>
 #include <signal.h>
+#include <thread>
+#include <mutex>
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
@@ -28,10 +30,47 @@ namespace mirmidivi
 {
     namespace RtMidi
     {
+	std::mutex LockMidiCachedMessage;
+
+	void MidiParse(std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>>& MidiCachedTimedMessages, MidiUtils& MidiInData, bool& QuitFlag)
+	{
+	    jdksmidi::MIDIParser Parser(32 * 1024); // "32 * 1024" is max sysex size (32KiB)
+
+	    while(!QuitFlag)
+	    {
+		// If MIDI cash(es) exist, parse it
+		if(!MidiCachedTimedMessages.empty())
+		{
+		    // Copy Midi cash. Lock-time necessary that as short as a possible.
+		    LockMidiCachedMessage.lock();
+		    auto CurrentMidiTimedMessage = MidiCachedTimedMessages;
+		    MidiCachedTimedMessages.clear();
+		    LockMidiCachedMessage.unlock();
+		    for(auto&& TimedMessage : CurrentMidiTimedMessage)
+		    {
+			MidiInData.MidiParsedMessage.SetTime(TimedMessage.first);
+			for(auto&& MidiByte : TimedMessage.second)
+			    Parser.Parse(MidiByte, &MidiInData.MidiParsedMessage);
+
+			// Put to track.
+			MidiInData.MidiTracks->GetTrack(1)->PutEvent(MidiInData.MidiParsedMessage);
+		    }
+		    Parser.Clear();
+		}
+		
+		// For avoid SEGV
+		sleep(10us);
+	    }
+	}
+
 	void MidiIn(MidiReceiver& MidiReceivedData, MidiUtils& MidiInData, bool& QuitFlag)
 	{
 	    double stamp;
 	    jdksmidi::MIDIClockTime t;
+	    std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>> MidiCachedTimedMessages;
+
+	    // Parse and store MIDI to track using jdksmidi
+	    std::thread MidiParseThread(MidiParse, std::ref(MidiCachedTimedMessages), std::ref(MidiInData), std::ref(QuitFlag));
 
 	    std::vector<unsigned char> PrevMessage;
 	    auto MidiTimePoint = std::chrono::system_clock::now();
@@ -44,20 +83,18 @@ namespace mirmidivi
 		if(PrevMessage != MidiReceivedData.MidiRawMessage)
 		{
 		    // Past time in MIDI tick
-		    t = (std::chrono::duration_cast<std::chrono::nanoseconds>
-			 (std::chrono::system_clock::now() - MidiTimePoint).count())
-			/ (60.00 * 1e9 / MidiInData.getBPM() / MidiInData.getMidiTimeBase()
-			    );
+		    t = MidiInData.TimeToTick(std::chrono::system_clock::now() - MidiTimePoint);
 		    
-		    PrevMessage = MidiReceivedData.MidiRawMessage;
+		    // Cash message.
+		    LockMidiCachedMessage.lock();
+		    MidiCachedTimedMessages.push_back(std::make_pair(t, MidiReceivedData.MidiRawMessage));
+		    LockMidiCachedMessage.unlock();
 
-		    // Store message 
-		    MidiReceivedData.Mutex.lock();
-		    MidiReceivedData.MidiCachedMessages.push_back(std::make_pair(t, MidiReceivedData.MidiRawMessage));
-		    MidiReceivedData.Mutex.unlock();
+		    PrevMessage = MidiReceivedData.MidiRawMessage;
 		}
-		sleep(10us);
+		sleep(10ns);
 	    } // while(!QuitFlag)
+	    MidiParseThread.join();
 	} // void MidiIn
     } // namespace RtMidi
 } // namespace mirmidivi
