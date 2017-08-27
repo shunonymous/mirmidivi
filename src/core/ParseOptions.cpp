@@ -119,6 +119,8 @@ namespace mirmidivi
 		API = vm["rend-api"].as<std::string>();
 		if(API == "text")
 		    Options.RenderAPI = "PrintMessage";
+		if(API == "ncurses")
+		    Options.RenderAPI = "ncurses";
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["rend-api"].as<std::string>() << " for rendering." << std::endl;
