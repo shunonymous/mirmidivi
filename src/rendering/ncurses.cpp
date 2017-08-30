@@ -107,7 +107,7 @@ namespace mirmidivi
 
 		// Set starting point
 		getmaxyx(stdscr, TermSize.Height, TermSize.Width);
-		StartingPiont.x = TermSize.Width - 6;
+		StartingPiont.x = TermSize.Width - 1;
 		StartingPiont.y = TermSize.Height / 2;
 
 		CurrentTick = MidiInData.TimeToTick(Begin - TimePoint);
@@ -138,7 +138,14 @@ namespace mirmidivi
 
 		erase();
 
-		for(int i = 0; i < PianoRollMap.size(); ++i)
+		int i;
+
+		if(PianoRollMap.size() < StartingPiont.x)
+		    i = 0;
+		else
+		    i = PianoRollMap.size() - StartingPiont.x;
+
+		for(; i < PianoRollMap.size(); ++i)
 		{
 		    for(int NoteNum = 0; NoteNum <= 127; ++NoteNum)
 		    {
@@ -153,7 +160,7 @@ namespace mirmidivi
 
 		}
 
-		if(PianoRollMap.size() > TermSize.Width - 6)
+		if(PianoRollMap.size() > TermSize.Width + 20)
 		{
 		    PianoRollMap.erase(PianoRollMap.begin(), PianoRollMap.begin() + 2);
 		}
