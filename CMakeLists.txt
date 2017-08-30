@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 # Version
 set (VERSION_MAJOR "0")
-set (VERSION_MINOR "0")
-set (VERSION_PATCH "1")
+set (VERSION_MINOR "3")
+set (VERSION_PATCH "9")
 set (VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 # Set export directories
