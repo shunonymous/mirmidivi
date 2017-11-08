@@ -83,7 +83,8 @@ namespace mirmidivi
 	
 	void RenderToNcurses(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 	{
-	    auto FrameTime = 1s / Options.FramePerSecond;
+//	    auto FrameTime = 1s / Options.FramePerSecond;
+	    auto FrameTime = 1s / 30.0;
 	    int CurrentEventNumber = 0, WorkingEventNumber = 0;
 	    int Channel, NoteNumber;
 	    std::vector<std::vector<std::pair<bool, short>>> PianoRollMap;
