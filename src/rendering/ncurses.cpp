@@ -85,6 +85,8 @@ namespace mirmidivi
 	{
 //	    auto FrameTime = 1s / Options.FramePerSecond;
 	    auto FrameTime = 1s / 30.0;
+	    float fps = 0.00;
+	    int FrameCount = 0;
 	    int CurrentEventNumber = 0, WorkingEventNumber = 0;
 	    int Channel, NoteNumber;
 	    std::vector<std::vector<std::pair<bool, short>>> PianoRollMap;
@@ -101,6 +103,7 @@ namespace mirmidivi
 	    ::jdksmidi::MIDIClockTime CurrentTick = 0;
 	    std::vector<std::pair<bool, short>> WritingBuffer(128,std::make_pair(false, 0));
 	    auto TimePoint = std::chrono::system_clock::now();
+	    auto FramePoint = std::chrono::system_clock::now();
 	    while(!QuitFlag)
 	    {
 		using namespace ::ncurses;
@@ -169,6 +172,18 @@ namespace mirmidivi
 		while((std::chrono::system_clock::now() - Begin) <= FrameTime)
 		{
 		    sleep(10us);
+		}
+
+		// fps counter
+		FrameCount++;
+		move(TermSize.Height - 1, TermSize.Width - 8);
+		attrset(COLOR_WHITE);
+		printw("%.2ffps", fps);
+		if (std::chrono::system_clock::now() - FramePoint >= 5s)
+		{
+		    fps = FrameCount / 5.00;
+		    FrameCount = 0;
+		    FramePoint = std::chrono::system_clock::now();
 		}
 		refresh();
 
