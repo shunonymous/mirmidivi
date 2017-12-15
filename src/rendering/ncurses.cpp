@@ -87,12 +87,13 @@ namespace mirmidivi
 	    auto FrameTime = 1s / 30.0;
 	    float fps = 0.00;
 	    int FrameCount = 0;
+
 	    int CurrentEventNumber = 0, WorkingEventNumber = 0;
 	    int Channel, NoteNumber;
 	    std::vector<std::vector<std::pair<bool, short>>> PianoRollMap;
 
-	    struct TermSize { int Width, Height; } TermSize;
-	    struct StartingPiont { int x, y; } StartingPiont;
+	    struct { int Width, Height; } TermSize;
+	    struct { int x, y; } StartingPiont;
 
 	    // Pre-reserve memory
 	    PianoRollMap.reserve(200);
@@ -104,6 +105,12 @@ namespace mirmidivi
 	    std::vector<std::pair<bool, short>> WritingBuffer(128,std::make_pair(false, 0));
 	    auto TimePoint = std::chrono::system_clock::now();
 	    auto FramePoint = std::chrono::system_clock::now();
+
+	    struct
+	    {
+		int Begin = 0, End = 0;
+	    } ScanningRange;
+
 	    while(!QuitFlag)
 	    {
 		using namespace ::ncurses;
@@ -111,7 +118,7 @@ namespace mirmidivi
 
 		// Set starting point
 		getmaxyx(stdscr, TermSize.Height, TermSize.Width);
-		StartingPiont.x = TermSize.Width - 1;
+		StartingPiont.x = TermSize.Width;
 		StartingPiont.y = TermSize.Height / 2;
 
 		CurrentTick = MidiInData.TimeToTick(Begin - TimePoint);
@@ -141,15 +148,15 @@ namespace mirmidivi
 		PianoRollMap.push_back(WritingBuffer);
 
 		erase();
-
-		int i;
-
-		if(PianoRollMap.size() < StartingPiont.x)
-		    i = 0;
+			
+		ScanningRange.End = PianoRollMap.size() - 3;
+		if(PianoRollMap.size() < TermSize.Width)
+		    ScanningRange.Begin = 0;
 		else
-		    i = PianoRollMap.size() - StartingPiont.x;
+		    ScanningRange.Begin = ScanningRange.End - TermSize.Width + 3;
 
-		for(; i < PianoRollMap.size(); ++i)
+		// Scan stored PianoRollMap between displaying area
+		for(int i = ScanningRange.Begin; i < ScanningRange.End; ++i)
 		{
 		    for(int NoteNum = 0; NoteNum <= 127; ++NoteNum)
 		    {
@@ -161,12 +168,13 @@ namespace mirmidivi
 			    printw("|");
 			}
 		    }
-
 		}
 
-		if(PianoRollMap.size() > TermSize.Width + 20)
+		if(PianoRollMap.size() > 8192)
 		{
-		    PianoRollMap.erase(PianoRollMap.begin(), PianoRollMap.begin() + 2);
+		    PianoRollMap.erase(PianoRollMap.begin(), PianoRollMap.begin() + 512);
+		    ScanningRange.Begin = ScanningRange.Begin - 512;
+		    ScanningRange.End = ScanningRange.End - 512;
 		}
 		
 		while((std::chrono::system_clock::now() - Begin) <= FrameTime)
@@ -174,11 +182,14 @@ namespace mirmidivi
 		    sleep(10us);
 		}
 
-		// fps counter
+
 		FrameCount++;
+		// Display infos
 		move(TermSize.Height - 1, TermSize.Width - 8);
 		attrset(COLOR_WHITE);
 		printw("%.2ffps", fps);
+		move(TermSize.Height - 2, TermSize.Width - 15);
+		printw("size:%dx%d", TermSize.Width, TermSize.Height);
 		if (std::chrono::system_clock::now() - FramePoint >= 5s)
 		{
 		    fps = FrameCount / 5.00;
