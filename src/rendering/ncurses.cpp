@@ -84,7 +84,7 @@ namespace mirmidivi
 	void RenderToNcurses(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 	{
 //	    auto FrameTime = 1s / Options.FramePerSecond;
-	    auto FrameTime = 1s / 30.0;
+	    auto FrameTime = 1s / 60.0;
 	    float fps = 0.00;
 	    int FrameCount = 0;
 
@@ -146,7 +146,7 @@ namespace mirmidivi
 		    }
 		}
 		PianoRollMap.push_back(WritingBuffer);
-
+		
 		erase();
 			
 		ScanningRange.End = PianoRollMap.size() - 3;
@@ -155,6 +155,7 @@ namespace mirmidivi
 		else
 		    ScanningRange.Begin = ScanningRange.End - TermSize.Width + 3;
 
+		auto t1 = std::chrono::system_clock::now();
 		// Scan stored PianoRollMap between displaying area
 		for(int i = ScanningRange.Begin; i < ScanningRange.End; ++i)
 		{
@@ -169,6 +170,7 @@ namespace mirmidivi
 			}
 		    }
 		}
+		auto t2 = std::chrono::system_clock::now();
 
 		if(PianoRollMap.size() > 8192)
 		{
@@ -190,6 +192,8 @@ namespace mirmidivi
 		printw("%.2ffps", fps);
 		move(TermSize.Height - 2, TermSize.Width - 15);
 		printw("size:%dx%d", TermSize.Width, TermSize.Height);
+		move(TermSize.Height - 3, TermSize.Width - 6);
+		printw("%dus", std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1));
 		if (std::chrono::system_clock::now() - FramePoint >= 5s)
 		{
 		    fps = FrameCount / 5.00;
