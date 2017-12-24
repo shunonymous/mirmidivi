@@ -4,7 +4,7 @@ project(mirmidivi CXX C)
 option(MIRMIDIVI_INSTALL_DIR "Set install path." /usr)
 
 ### C++ Version
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Version
 set (VERSION_MAJOR "0")
