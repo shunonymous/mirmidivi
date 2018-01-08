@@ -20,6 +20,7 @@
 #define MIRMIDIVI_HPP
 
 #include <string>
+#include <chrono>
 
 #include <jdksmidi/world.h>
 #include <jdksmidi/midi.h>
@@ -53,6 +54,9 @@ namespace mirmidivi
     public:
 	
     };	
+
+    // aliases
+    using sysclk = std::chrono::system_clock;
 
 } // namespace mirmidivi
 

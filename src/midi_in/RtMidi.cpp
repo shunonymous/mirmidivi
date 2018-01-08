@@ -32,7 +32,9 @@ namespace mirmidivi
     {
 	std::mutex LockMidiCachedMessage;
 
-	void MidiParse(std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>>& MidiCachedTimedMessages, MidiUtils& MidiInData, bool& QuitFlag)
+	using MidiMessages = std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>>;
+
+	void MidiParse(MidiMessages& MidiCachedTimedMessages, MidiUtils& MidiInData, bool& QuitFlag)
 	{
 	    jdksmidi::MIDIParser Parser(32 * 1024); // "32 * 1024" is max sysex size (32KiB)
 
@@ -67,13 +69,13 @@ namespace mirmidivi
 	{
 	    double stamp;
 	    jdksmidi::MIDIClockTime t;
-	    std::vector<std::pair<::jdksmidi::MIDIClockTime, std::vector<unsigned char>>> MidiCachedTimedMessages;
+	    MidiMessages MidiCachedTimedMessages;
 
 	    // Parse and store MIDI to track using jdksmidi
 	    std::thread MidiParseThread(MidiParse, std::ref(MidiCachedTimedMessages), std::ref(MidiInData), std::ref(QuitFlag));
 
 	    std::vector<unsigned char> PrevMessage;
-	    auto MidiTimePoint = std::chrono::system_clock::now();
+	    auto MidiTimePoint = sysclk::now();
 
 	    while(!QuitFlag){
 		// Get MIDI message
@@ -83,7 +85,7 @@ namespace mirmidivi
 		if(PrevMessage != MidiReceivedData.MidiRawMessage)
 		{
 		    // Past time in MIDI tick
-		    t = MidiInData.TimeToTick(std::chrono::system_clock::now() - MidiTimePoint);
+		    t = MidiInData.TimeToTick(sysclk::now() - MidiTimePoint);
 		    
 		    // Cash message.
 		    LockMidiCachedMessage.lock();

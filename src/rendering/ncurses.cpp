@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <vector>
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
@@ -42,6 +43,9 @@ namespace mirmidivi
 {
     namespace ncurses
     {
+	using Piano = std::vector<std::pair<bool, short>>;
+	using PianoRoll = std::vector<Piano>;
+
 	void InitNcurses()
 	{
 	    using namespace ::ncurses;
@@ -51,8 +55,6 @@ namespace mirmidivi
 	    cbreak();
 	    echo();
 
-	    int w,h,x,y;
-	    
 	    if(has_colors())
 	    {
 		start_color();
@@ -88,9 +90,9 @@ namespace mirmidivi
 	    float fps = 0.00;
 	    int FrameCount = 0;
 
-	    int CurrentEventNumber = 0, WorkingEventNumber = 0;
 	    int Channel, NoteNumber;
-	    std::vector<std::vector<std::pair<bool, short>>> PianoRollMap;
+	    PianoRoll PianoRollMap;
+	    int WorkingEventNumber = 0, CurrentEventNumber = 0;
 
 	    struct { int Width, Height; } TermSize;
 	    struct { int x, y; } StartingPiont;
@@ -102,9 +104,10 @@ namespace mirmidivi
 	    
 	    InitNcurses();
 	    ::jdksmidi::MIDIClockTime CurrentTick = 0;
-	    std::vector<std::pair<bool, short>> WritingBuffer(128,std::make_pair(false, 0));
-	    auto TimePoint = std::chrono::system_clock::now();
-	    auto FramePoint = std::chrono::system_clock::now();
+	    Piano WritingBuffer(128,std::make_pair(false, 0));
+
+	    auto TimePoint = sysclk::now();
+	    auto FramePoint = sysclk::now();
 
 	    struct
 	    {
@@ -114,7 +117,7 @@ namespace mirmidivi
 	    while(!QuitFlag)
 	    {
 		using namespace ::ncurses;
-		auto Begin = std::chrono::system_clock::now();
+		auto Begin = sysclk::now();
 
 		// Set starting point
 		getmaxyx(stdscr, TermSize.Height, TermSize.Width);
@@ -122,12 +125,12 @@ namespace mirmidivi
 		StartingPiont.y = TermSize.Height / 2;
 
 		CurrentTick = MidiInData.TimeToTick(Begin - TimePoint);
-
-		MidiInData.MidiTracks->GetTrack(1)->FindEventNumber(CurrentTick, &CurrentEventNumber);
 		
-		for(;WorkingEventNumber < CurrentEventNumber; ++WorkingEventNumber)
+		MidiInData.MidiTracks->GetTrack(1)->FindEventNumber(CurrentTick, &CurrentEventNumber);
+
+ 		for(;WorkingEventNumber < CurrentEventNumber; ++WorkingEventNumber)
 		{
-		    if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->IsNoteOn())
+		    if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(1)->IsNoteOn())
 		    {
 			NoteNumber = static_cast<int>(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetNote());
 			Channel = MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetChannel();
@@ -155,7 +158,6 @@ namespace mirmidivi
 		else
 		    ScanningRange.Begin = ScanningRange.End - TermSize.Width + 3;
 
-		auto t1 = std::chrono::system_clock::now();
 		// Scan stored PianoRollMap between displaying area
 		for(int i = ScanningRange.Begin; i < ScanningRange.End; ++i)
 		{
@@ -170,7 +172,6 @@ namespace mirmidivi
 			}
 		    }
 		}
-		auto t2 = std::chrono::system_clock::now();
 
 		if(PianoRollMap.size() > 8192)
 		{
@@ -179,7 +180,7 @@ namespace mirmidivi
 		    ScanningRange.End = ScanningRange.End - 512;
 		}
 		
-		while((std::chrono::system_clock::now() - Begin) <= FrameTime)
+		while((sysclk::now() - Begin) <= FrameTime)
 		{
 		    sleep(10us);
 		}
@@ -192,13 +193,11 @@ namespace mirmidivi
 		printw("%.2ffps", fps);
 		move(TermSize.Height - 2, TermSize.Width - 15);
 		printw("size:%dx%d", TermSize.Width, TermSize.Height);
-		move(TermSize.Height - 3, TermSize.Width - 6);
-		printw("%dus", std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1));
-		if (std::chrono::system_clock::now() - FramePoint >= 5s)
+		if (sysclk::now() - FramePoint >= 5s)
 		{
 		    fps = FrameCount / 5.00;
 		    FrameCount = 0;
-		    FramePoint = std::chrono::system_clock::now();
+		    FramePoint = sysclk::now();
 		}
 		refresh();
 
