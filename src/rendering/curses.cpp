@@ -1,5 +1,5 @@
 /*
- * ncurses.cpp - Rendering MIDI to console
+ * curses.cpp - Rendering MIDI to console
  *
  * This program is part of mirmidivi
  *
@@ -35,20 +35,20 @@ enum ExtColors
     COLOR_DEEPPINK = 9,
 };
 
-namespace ncurses{
-#include <ncurses.h>
+namespace curses{
+#include <curses.h>
 }
 
 namespace mirmidivi
 {
-    namespace ncurses
+    namespace curses
     {
 	using Piano = std::vector<std::pair<bool, short>>;
 	using PianoRoll = std::vector<Piano>;
 
-	void InitNcurses()
+	void InitCurses()
 	{
-	    using namespace ::ncurses;
+	    using namespace ::curses;
 	    initscr();
 	    keypad(stdscr, TRUE);
 	    nonl();
@@ -83,7 +83,7 @@ namespace mirmidivi
 	    curs_set(0);	    
 	}
 	
-	void RenderToNcurses(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
+	void RenderToCurses(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 	{
 //	    auto FrameTime = 1s / Options.FramePerSecond;
 	    auto FrameTime = 1s / 60.0;
@@ -102,7 +102,7 @@ namespace mirmidivi
 	    for(auto& PianoRoll : PianoRollMap)
 		PianoRoll.reserve(128);
 	    
-	    InitNcurses();
+	    InitCurses();
 	    ::jdksmidi::MIDIClockTime CurrentTick = 0;
 	    Piano WritingBuffer(128,std::make_pair(false, 0));
 
@@ -116,7 +116,7 @@ namespace mirmidivi
 
 	    while(!QuitFlag)
 	    {
-		using namespace ::ncurses;
+		using namespace ::curses;
 		auto Begin = sysclk::now();
 
 		// Set starting point
@@ -202,14 +202,14 @@ namespace mirmidivi
 		refresh();
 
 	    } // while(!QuitFlag)
-	    ::ncurses::endwin();
+	    ::curses::endwin();
 	} // void PrintMessage
-    } // namespace ncurses
+    } // namespace curses
 } // namespace mirmidivi
 
 // Call from external source    
 extern "C" void Rendering(mirmidivi::Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
-    mirmidivi::ncurses::RenderToNcurses(Options, MidiReceivedData, MidiInData, QuitFlag);
+    mirmidivi::curses::RenderToCurses(Options, MidiReceivedData, MidiInData, QuitFlag);
 }
