@@ -61,12 +61,12 @@ int main(int argc, char** argv)
 
     // Dynamic loading MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
-    MidiInLibrary.setupLibrary(Options.InputMidiAPI, "MidiIn");
+    MidiInLibrary.setupLibrary("mirmidivi_" + Options.InputMidiAPI, "MidiIn");
     auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Dynamic loading rendering library
     DynamicLoadLibray RenderingLibrary;
-    RenderingLibrary.setupLibrary(Options.RenderAPI,"Rendering");
+    RenderingLibrary.setupLibrary("mirmidivi_" + Options.RenderAPI,"Rendering");
     auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Launch threads
