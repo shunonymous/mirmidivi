@@ -3,4 +3,5 @@
 	url = https://github.com/shunonymous/DynamicLoader
 [submodule "lib/jdksmidi"]
 	path = lib/jdksmidi
-	url = https://github.com/jdkoftinoff/jdksmidi/
+	url = https://github.com/shunonymous/jdksmidi
+	branch = experimental3
