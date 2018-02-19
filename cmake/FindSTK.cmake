@@ -10,6 +10,11 @@
 # RtAudio:
 #   RTAUDIO_FOUND     - True if headers and requested libraries were found
 #   RTAUDIO_LIBRARY   - RtAudio library to be link with platform specify libraries
+#
+# Author: Shun Terabayashi <shunonymous@gmail.com>
+# Licensed under New-BSD Licens.
+#
+
 
 # Try to serch Stk Libraries and headers
 find_path(STK_INCLUDE_DIR stk/Stk.h)
