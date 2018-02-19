@@ -3,7 +3,7 @@
  *
  * This is a part of mirmidivi.
  *
- * Copyright (C) 2015-2016 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2015-2016, 2018 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,20 +44,18 @@ namespace mirmidivi
 
 	// Set options
 	Core.add_options()
-	    ("help,h","Print this help and exit.")
-	    ("midi-api,m",po::value<std::string>(),"The name of the MIDI API to use [RtMidi].")
-	    ("rend-api,g",po::value<std::string>(),"The name of the rendering API to use [opengl(WIP),text,ncurses(WIP)].")
+	    ("help,h", "Print this help and exit.")
+	    ("midi-api,m", po::value<std::string>(), "The name of the MIDI API to use [RtMidi].")
+	    ("rend-api,g", po::value<std::string>(), "The name of the rendering API to use [opengl(WIP),text,ncurses(WIP)].")
 	    // ("config-module,x",po::value<std::string>(),"Configure module. [MODULE:OPTIONS]")
 	    ;
 	// About MIDI
-//	Midi.add_options()
-//	    ("realtime,r","Enable realtime mode.")
-//	    ("buffer,b",po::value<unsigned int>(&Options.BufferMilliSecond),"Set buffer length in ms.")
-//	    ;
+
+
 	// About render
 	Render.add_options()
-	    ("fps,f",po::value<float>(&Options.FramePerSecond),"Set frame per second.")
-	    ("size,s",po::value<std::vector<int> >()->multitoken(),"Set drawing region size to use [(horizonal) (vertex)]")
+	    ("fps,f", po::value<float>(&Options.FramePerSecond), "Set frame per second.")
+	    ("size,s", po::value<std::vector<int> >()->multitoken(), "Set drawing region size to use [(horizonal) (vertex)]")
 	    ;
 	
 	po::variables_map vm;
@@ -68,7 +66,7 @@ namespace mirmidivi
 	try{
 
 	    // Store options
-	    po::store(po::parse_command_line(argc,argv,Core),vm);
+	    po::store(po::parse_command_line(argc, argv, Core), vm);
 	    po::notify(vm);
 
 	    // Print help message and exit
@@ -78,10 +76,6 @@ namespace mirmidivi
 		exit(0);
 	    }
 	    
-	    // Realtime Mode
-//	    if(vm.count("realtime"))
-//		Options.RealTime = true;
-
 	    // Drow region(flame) size
 	    if(vm.count("size"))
 	    {
@@ -130,10 +124,6 @@ namespace mirmidivi
 		// If nothing to set rend-api
 		Options.RenderAPI = "PrintMessage";
 	    }
-	    // Fullscreen
-//	    if(vm.count("fullscreen"))
-//		Options.FullScreen = true;
-	    
 	} // try
 
 	// Error handling
