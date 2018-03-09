@@ -130,7 +130,7 @@ namespace mirmidivi
 
  		for(;WorkingEventNumber < CurrentEventNumber; ++WorkingEventNumber)
 		{
-		    if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(1)->IsNoteOn())
+		    if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->IsNoteOn())
 		    {
 			NoteNumber = static_cast<int>(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetNote());
 			Channel = MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetChannel();
