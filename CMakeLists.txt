@@ -59,9 +59,6 @@ include_directories(lib/jdksmidi/include)
 ### External projects are here
 add_subdirectory(lib/)
 
-### C++ Version
-set(CMAKE_CXX_STANDARD 14)
-
 # Build
 add_subdirectory(src/)
 
