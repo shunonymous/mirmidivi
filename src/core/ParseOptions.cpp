@@ -24,13 +24,14 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <string>
 #include <boost/program_options.hpp>
 
 #include "mirmidivi/mirmidivi.hpp"
 
 namespace mirmidivi
 {
-    Option parseOptions(int argc,char** argv)
+    Option parseOptions(int argc, char** argv)
     {
 	namespace po = boost::program_options;
 
@@ -45,17 +46,17 @@ namespace mirmidivi
 	// Set options
 	Core.add_options()
 	    ("help,h", "Print this help and exit.")
-	    ("midi-api,m", po::value<std::string>(), "The name of the MIDI API to use [RtMidi].")
-	    ("rend-api,g", po::value<std::string>(), "The name of the rendering API to use [opengl(WIP),text,ncurses(WIP)].")
-	    // ("config-module,x",po::value<std::string>(),"Configure module. [MODULE:OPTIONS]")
+	    ("rendering-api,g", po::value<std::string>(), "The name of the rendering API to use [text, curses].")
 	    ;
-	// About MIDI
 
+	// About MIDI
+	Midi.add_options()
+	    ("midi-in-api,m", po::value<std::string>(), "API for input MIDI.\n")
+	    ;
 
 	// About render
 	Render.add_options()
 	    ("fps,f", po::value<float>(&Options.FramePerSecond), "Set frame per second.")
-	    ("size,s", po::value<std::vector<int> >()->multitoken(), "Set drawing region size to use [(horizonal) (vertex)]")
 	    ;
 	
 	po::variables_map vm;
@@ -76,20 +77,6 @@ namespace mirmidivi
 		exit(0);
 	    }
 	    
-	    // Drow region(flame) size
-	    if(vm.count("size"))
-	    {
-		if(vm["size"].as<std::vector<int>>().size() == 2)
-		{
-		    Options.HorizonalResolution = vm["size"].as<std::vector<int> >()[0];
-		    Options.VertexResolution = vm["size"].as<std::vector<int> >()[1];
-		}
-		else
-		{
-		    std::cerr << "Error: --size option requires only 2 arguments." << std::endl;
-		}
-	    }
-
 	    std::string API;
 	    // Midi API
 	    if(vm.count("midi-api"))
