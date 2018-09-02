@@ -43,30 +43,27 @@ int main(int argc, char** argv)
 {
     using namespace mirmidivi;
     using namespace DynamicLoader;
-    Option Options;
+    Option Options(argc, argv);
 
     // Signal handling
     QuitFlag = false;
     std::signal(SIGINT, Quit);
-
-    // Set options
-    Options = parseOptions(argc, argv);
 
     // Midi Data
     MidiReceiver MidiReceivedData;
     MidiUtils MidiInData;
 
     // Using MIDI API
-    std::cout << "MIDI API:" << Options.InputMidiAPI << std::endl;
+    std::cout << "MIDI API:" << Options.getMidiInApi()  << std::endl;
 
     // Dynamic loading MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
-    MidiInLibrary.setupLibrary("mirmidivi_" + Options.InputMidiAPI, "MidiIn");
+    MidiInLibrary.setupLibrary("mirmidivi_" + Options.getRenderingApi(), "MidiIn");
     auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Dynamic loading rendering library
     DynamicLoadLibray RenderingLibrary;
-    RenderingLibrary.setupLibrary("mirmidivi_" + Options.RenderAPI,"Rendering");
+    RenderingLibrary.setupLibrary("mirmidivi_" + Options.getRenderingApi(), "Rendering");
     auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Launch threads

@@ -31,20 +31,19 @@
 
 namespace mirmidivi
 {
-    Option parseOptions(int argc, char** argv)
+    Option::Option(int argc, char** argv)
     {
 	namespace po = boost::program_options;
 
-	Option Options;
 	bool ExitFlag = false;
 
 	// Declare mirmidivi options 
-	po::options_description Core("Options");
+	po::options_description Base("Options");
 	po::options_description Midi("MIDI");
 	po::options_description Render("Rendering");
 
 	// Set options
-	Core.add_options()
+	Base.add_options()
 	    ("help,h", "Print this help and exit.")
 	    ("rendering-api,g", po::value<std::string>(), "The name of the rendering API to use [text, curses].")
 	    ;
@@ -56,24 +55,23 @@ namespace mirmidivi
 
 	// About render
 	Render.add_options()
-	    ("fps,f", po::value<float>(&Options.FramePerSecond), "Set frame per second.")
+	    ("fps,f", po::value<float>(&FramePerSecond), "Set frame per second.")
 	    ;
 	
 	po::variables_map vm;
 
 	// Merge options
-	Core.add(Midi).add(Render);
+	Base.add(Midi).add(Render);
 
 	try{
-
 	    // Store options
-	    po::store(po::parse_command_line(argc, argv, Core), vm);
+	    po::store(po::parse_command_line(argc, argv, Base), vm);
 	    po::notify(vm);
 
 	    // Print help message and exit
 	    if(vm.count("help"))
 	    {
-		std::cout << Core << std::endl;
+		std::cout << Base << std::endl;
 		exit(0);
 	    }
 	    
@@ -83,7 +81,7 @@ namespace mirmidivi
 	    {
 		API = vm["midi-api"].as<std::string>();
 		if(API == "RtMidi")
-		    Options.InputMidiAPI = "RtMidi";
+		    MidiInApi = "RtMidi";
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["midi-api"].as<std::string>() << " for midi-in." << std::endl;
@@ -91,7 +89,7 @@ namespace mirmidivi
 		}
 	    }else{
 		// If nothing to set midi-api
-		Options.InputMidiAPI = "RtMidi";
+		MidiInApi = "RtMidi";
 	    }
 
 	    // Rendering API
@@ -99,9 +97,9 @@ namespace mirmidivi
 	    {
 		API = vm["rend-api"].as<std::string>();
 		if(API == "text")
-		    Options.RenderAPI = "PrintMessage";
+		    RenderApi = "PrintMessage";
 		else if(API == "curses")
-		    Options.RenderAPI = "curses";
+		    RenderApi = "curses";
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["rend-api"].as<std::string>() << " for rendering." << std::endl;
@@ -109,7 +107,7 @@ namespace mirmidivi
 		}
 	    }else{
 		// If nothing to set rend-api
-		Options.RenderAPI = "PrintMessage";
+		RenderApi = "PrintMessage";
 	    }
 	} // try
 
@@ -117,7 +115,7 @@ namespace mirmidivi
 	catch(std::exception& e)
 	{
 	    std::cerr << "Error: " << e.what() << std::endl;
-	    std::cerr << Core << std::endl;
+	    std::cerr << Base << std::endl;
 	    ExitFlag = true;
 	}
 	
@@ -129,7 +127,5 @@ namespace mirmidivi
 
 	if(ExitFlag == true)
 	    exit(1);
-
-	return Options;
     } // bool ParseOptions(int argc,char **argv)
 } // namespace mirmidivi

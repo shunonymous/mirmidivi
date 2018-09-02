@@ -33,18 +33,23 @@ namespace mirmidivi
     // Store options from command-line args (or other)
     class Option
     {
-    public:
+    private:
 	// bool RealTime;
 	// bool RtMidi;
-	float FramePerSecond = 30.0;
+	float FramePerSecond;
 	int VertexResolution;
 	int HorizonalResolution;
 	// bool FullScreen;
-	std::string InputMidiAPI;
-	std::string RenderAPI;
-    }; // class Environment : public MidiEnvironment,public RenderEnvironment
+	std::string MidiInApi;
+	std::string RenderApi;
+    public:
+	void setFramePerSecond(float fps) { FramePerSecond = fps; }
+	float getFramePerSecond(){ return FramePerSecond; };
 
-    Option parseOptions(int argc, char** argv);
+	std::string getMidiInApi(){ return MidiInApi; }
+	std::string getRenderingApi(){ return RenderApi; }
+	Option(int argc, char** argv);
+    }; // class Option
 
     class Midi
     {
