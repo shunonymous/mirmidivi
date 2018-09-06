@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
     // Dynamic loading MIDI-In Library
     DynamicLoadLibray MidiInLibrary;
-    MidiInLibrary.setupLibrary("mirmidivi_" + Options.getRenderingApi(), "MidiIn");
+    MidiInLibrary.setupLibrary("mirmidivi_" + Options.getMidiInApi(), "MidiIn");
     auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
 
     // Dynamic loading rendering library

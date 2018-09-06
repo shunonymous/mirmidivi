@@ -25,7 +25,9 @@
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
-#include "mirmidivi/midi.hpp"
+
+#include "midi.hpp"
+
 namespace mirmidivi
 {
     namespace RtMidi
@@ -94,7 +96,7 @@ namespace mirmidivi
 
 		    PrevMessage = MidiReceivedData.MidiRawMessage;
 		}
-		sleep(10ns);
+		sleep(1us);
 	    } // while(!QuitFlag)
 	    MidiParseThread.join();
 	} // void MidiIn

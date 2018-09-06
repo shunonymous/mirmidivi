@@ -16,23 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mirmidivi/midi.hpp"
+#include "midi.hpp"
 
 namespace mirmidivi
 {
+/*    std::vector<std::string> MidiReceiver::getCompiledApi()
+    {
+	std::vector<std::string> ApiList, CompiledApiList;
+	
+	ApiList = {"none", "coremidi", "alsa", "jack", "winmm", "dummy"};
+	
+	return CompiledApiList;
+    }
+*/  
     MidiReceiver::MidiReceiver()
     {
 	// Open port with name
 	MidiIn.reset(new RtMidiIn(RtMidi::UNSPECIFIED, "mirmidivi Input Client (by RtMidi)", 100));
 	std::cout << "Start" << std::endl;
 
-	// Get and display enabled API
-	MidiIn->getCompiledApi(CompiledAPI);
-	std::cout << "Enable ";
-	for(auto elem:CompiledAPI)
-	    std::cout << elem;
-	std::cout << std::endl;
-	
 	// Check available ports.
 	unsigned int nPorts = MidiIn->getPortCount();
 	std::cout << "Check available ports." << std::endl;

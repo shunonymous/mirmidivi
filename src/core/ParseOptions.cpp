@@ -50,7 +50,8 @@ namespace mirmidivi
 
 	// About MIDI
 	Midi.add_options()
-	    ("midi-in-api,m", po::value<std::string>(), "API for input MIDI.\n")
+	    ("midi-in-api", po::value<std::string>(), "API for input MIDI.\n")
+	    ("midi-in-platform,i", po::value<std::string>(), "Platform for input MIDI.\n")
 	    ;
 
 	// About render
@@ -77,9 +78,9 @@ namespace mirmidivi
 	    
 	    std::string API;
 	    // Midi API
-	    if(vm.count("midi-api"))
+	    if(vm.count("midi-in-api"))
 	    {
-		API = vm["midi-api"].as<std::string>();
+		API = vm["midi-in-api"].as<std::string>();
 		if(API == "RtMidi")
 		    MidiInApi = "RtMidi";
 		else
@@ -92,10 +93,13 @@ namespace mirmidivi
 		MidiInApi = "RtMidi";
 	    }
 
+	    if(vm.count("midi-in-platform"))
+		MidiInPlatform = vm["midi-in-platform"].as<std::string>();
+
 	    // Rendering API
-	    if(vm.count("rend-api"))
+	    if(vm.count("rendering-api"))
 	    {
-		API = vm["rend-api"].as<std::string>();
+		API = vm["rendering-api"].as<std::string>();
 		if(API == "text")
 		    RenderApi = "PrintMessage";
 		else if(API == "curses")

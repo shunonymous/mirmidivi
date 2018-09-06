@@ -41,12 +41,15 @@ namespace mirmidivi
 	int HorizonalResolution;
 	// bool FullScreen;
 	std::string MidiInApi;
+	std::string MidiInPlatform;
 	std::string RenderApi;
+
     public:
 	void setFramePerSecond(float fps) { FramePerSecond = fps; }
 	float getFramePerSecond(){ return FramePerSecond; };
 
 	std::string getMidiInApi(){ return MidiInApi; }
+	std::string getMidiInPlatform(){ return MidiInPlatform; }
 	std::string getRenderingApi(){ return RenderApi; }
 	Option(int argc, char** argv);
     }; // class Option
