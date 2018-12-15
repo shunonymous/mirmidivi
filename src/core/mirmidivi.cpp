@@ -23,7 +23,7 @@
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/midi.hpp"
 
-#include "DynamicLoader/DynamicLoader.hpp"
+#include "dlldr.hpp"
 
 
 //////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ void Quit(int Signal)
 int main(int argc, char** argv)
 {
     using namespace mirmidivi;
-    using namespace DynamicLoader;
+    using namespace dlldr;
     Option Options(argc, argv);
 
     // Signal handling
@@ -56,16 +56,17 @@ int main(int argc, char** argv)
     // Using MIDI API
     std::cout << "MIDI API:" << Options.getMidiInApi()  << std::endl;
 
-    // Dynamic loading MIDI-In Library
-    DynamicLoadLibray MidiInLibrary;
-    MidiInLibrary.setupLibrary("mirmidivi_" + Options.getMidiInApi(), "MidiIn");
-    auto MidiIn = MidiInLibrary.Function<void>("MidiIn").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
+    // Dynamic loading Libraries
+    auto dlldr_mode =
+	shared_library::add_decorations +
+	shared_library::search_system_directories;
+	
+    shared_library MidiInLibrary("mirmidivi_" + Options.getMidiInApi(), dlldr_mode);
+    shared_library RenderingLibrary("mirmidivi_" + Options.getRenderingApi(), dlldr_mode);
 
-    // Dynamic loading rendering library
-    DynamicLoadLibray RenderingLibrary;
-    RenderingLibrary.setupLibrary("mirmidivi_" + Options.getRenderingApi(), "Rendering");
-    auto Rendering = RenderingLibrary.Function<void>("Rendering").alias<Option, MidiReceiver&, MidiUtils&, bool&>();
-
+    auto MidiIn = MidiInLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("MidiIn");
+    auto Rendering = RenderingLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("Rendering");
+    
     // Launch threads
     std::thread MidiInThread(MidiIn, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));
     std::thread RenderingThread(Rendering, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));

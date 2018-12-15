@@ -41,23 +41,19 @@ set(Boost_USE_STATIC_RUNTIME ON)
 find_package(Boost 1.32 COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# Poco
-include(FindPoco)
-
-find_package(Poco REQUIRED Foundation)
-include_directories(${Poco_DIR})
-
 # RtMidi
 find_package(RtMidi)
 if(RTMIDI_FOUND)
   include_directories(${RTMIDI_INCLUDE_DIR})
 endif()
-# include path
-include_directories(include/)
-include_directories(lib/jdksmidi/include)
 
 ### External projects are here
 add_subdirectory(lib/)
+include_directories(
+  include/
+  lib/dlldr/include
+  lib/jdksmidi/include
+  )
 
 # Build
 add_subdirectory(src/)
