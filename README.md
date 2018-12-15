@@ -16,7 +16,6 @@ mirmidivi needs to build and run below softwares, so at the first, install it us
 * curses (Now, tested only [ncurses](https://www.gnu.org/software/ncurses/))
 * [RtMidi](https://github.com/thestk/rtmidi)(or [STK](https://github.com/thestk/stk))
 * [Boost C++ Libraries](http://www.boost.org/)
-* [Poco C++ Libraries](https://pocoproject.org/)
 
 Build
 -----
@@ -82,3 +81,5 @@ mail:[shunonymous@gmail.com](mailto:shunonymous@gmail.com)
 GitHub:[@shunonymous](https://github.com/shunonymous)
 
 Twitter:[@shunonymous](https://twitter.com/shunonymous)(Japanese)
+
+Mastodon:[@shunonymous@pawoo.net](https://pawoo.net/@shunonymous)(Japanese)
