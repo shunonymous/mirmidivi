@@ -50,7 +50,7 @@ namespace mirmidivi
 
 	// About MIDI
 	Midi.add_options()
-	    ("midi-in-api", po::value<std::string>(), "API for input MIDI.\n")
+	    ("midi-in-api", po::value<std::string>(), "API for input MIDI [RtMidi].\n")
 	    ("midi-in-platform,i", po::value<std::string>(), "Platform for input MIDI.\n")
 	    ;
 
@@ -82,37 +82,50 @@ namespace mirmidivi
 	    {
 		API = vm["midi-in-api"].as<std::string>();
 		if(API == "RtMidi")
-		    MidiInApi = "RtMidi";
+		    MidiInApi = RTMIDI;
 		else
 		{
-		    std::cerr << "mirmidivi has not " << vm["midi-api"].as<std::string>() << " for midi-in." << std::endl;
+		    std::cerr << "mirmidivi has not " << API << " for midi-in." << std::endl;
 		    ExitFlag = true;
 		}
-	    }else{
+	    } else
 		// If nothing to set midi-api
-		MidiInApi = "RtMidi";
-	    }
+		MidiInApi = RTMIDI;
 
 	    if(vm.count("midi-in-platform"))
-		MidiInPlatform = vm["midi-in-platform"].as<std::string>();
+	    {
+		const std::string& platform = vm["midi-in-platform"].as<std::string>();
+
+		if(platform == "alsa")
+		    MidiInPlatform = ALSA_SEQ;
+		else if(platform == "jack")
+		    MidiInPlatform = JACK;
+		else if(platform == "coremidi")
+		    MidiInPlatform = COREMIDI;
+		else if(platform == "win32")
+		    MidiInPlatform = WIN32;
+		else if(platform == "smf")
+		    MidiInPlatform = SMF;
+		else if(platform == "dummy")
+		    MidiInPlatform = DUMMY;
+	    }
 
 	    // Rendering API
 	    if(vm.count("rendering-api"))
 	    {
 		API = vm["rendering-api"].as<std::string>();
 		if(API == "text")
-		    RenderApi = "PrintMessage";
+		    RenderingApi = TEXT;
 		else if(API == "curses")
-		    RenderApi = "curses";
+		    RenderingApi = CURSES;
 		else
 		{
 		    std::cerr << "mirmidivi has not " << vm["rend-api"].as<std::string>() << " for rendering." << std::endl;
 		    ExitFlag = true;
 		}
-	    }else{
+	    } else
 		// If nothing to set rend-api
-		RenderApi = "PrintMessage";
-	    }
+		RenderingApi = TEXT;
 	} // try
 
 	// Error handling

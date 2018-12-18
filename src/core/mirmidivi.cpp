@@ -1,7 +1,7 @@
 /*
  * mirmidivi is rendering midi as visual
  *
- * Copyright (C) 2016-2017 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2016-2018 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,8 @@ int main(int argc, char** argv)
 	shared_library::add_decorations +
 	shared_library::search_system_directories;
 	
-    shared_library MidiInLibrary("mirmidivi_" + Options.getMidiInApi(), dlldr_mode);
-    shared_library RenderingLibrary("mirmidivi_" + Options.getRenderingApi(), dlldr_mode);
+    shared_library MidiInLibrary("mirmidivi_" + Options.MidiInLibname.at(Options.getMidiInApi()), dlldr_mode);
+    shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
 
     auto MidiIn = MidiInLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("MidiIn");
     auto Rendering = RenderingLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("Rendering");

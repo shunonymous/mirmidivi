@@ -21,15 +21,14 @@
 
 #include <string>
 #include <chrono>
-
-#include <jdksmidi/world.h>
-#include <jdksmidi/midi.h>
-#include <jdksmidi/msg.h>
-#include <jdksmidi/sysex.h>
-#include <jdksmidi/parser.h>
+#include <unordered_map>
 
 namespace mirmidivi
 {
+    enum MidiApi{RTMIDI, FLUIDSYNTH};
+    enum MidiPlatform{ALSA_SEQ, JACK, COREMIDI, WIN32, SMF, DUMMY};
+    enum RenderApi{CURSES, TEXT};
+
     // Store options from command-line args (or other)
     class Option
     {
@@ -37,31 +36,30 @@ namespace mirmidivi
 	// bool RealTime;
 	// bool RtMidi;
 	float FramePerSecond;
-	int VertexResolution;
-	int HorizonalResolution;
+//	int VertexResolution;
+//	int HorizonalResolution;
 	// bool FullScreen;
-	std::string MidiInApi;
-	std::string MidiInPlatform;
-	std::string RenderApi;
-
+	MidiApi MidiInApi;
+	MidiPlatform MidiInPlatform;
+	RenderApi RenderingApi;
     public:
+	const std::unordered_map<MidiApi, std::string> MidiInLibname = {
+	    {RTMIDI, "RtMidi"},
+	    {FLUIDSYNTH, "fluidsynth"}
+	};
+	const std::unordered_map<RenderApi, std::string> RenderLibName = {
+	    {CURSES, "curses"},
+	    {TEXT, "PrintText"}
+	};
+
 	void setFramePerSecond(float fps) { FramePerSecond = fps; }
 	float getFramePerSecond(){ return FramePerSecond; };
 
-	std::string getMidiInApi(){ return MidiInApi; }
-	std::string getMidiInPlatform(){ return MidiInPlatform; }
-	std::string getRenderingApi(){ return RenderApi; }
+	MidiApi getMidiInApi(){ return MidiInApi; }
+	MidiPlatform getMidiInPlatform(){ return MidiInPlatform; }
+	RenderApi getRenderingApi(){ return RenderingApi; }
 	Option(int argc, char** argv);
     }; // class Option
-
-    class Midi
-    {
-    private:
-	jdksmidi::MIDIMessage InputMidiData;
-	std::vector<jdksmidi::MIDIMessage> StoredMidi;
-    public:
-	
-    };	
 
     // aliases
     using sysclk = std::chrono::system_clock;
