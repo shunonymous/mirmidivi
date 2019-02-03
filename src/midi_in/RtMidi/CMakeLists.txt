@@ -1,5 +1,0 @@
-add_library(mirmidivi_midi STATIC midi.cpp)
-target_link_libraries(mirmidivi_midi ${RTMIDI_LIBRARY})
-add_library(mirmidivi_RtMidi MODULE RtMidi.cpp)
-target_link_libraries(mirmidivi_RtMidi ${RTMIDI_LIBRARY} jdksmidi mirmidivi_midi)
-install(TARGETS mirmidivi_RtMidi mirmidivi_midi DESTINATION ${MIRMIDIVI_LIBRARY_DIR})

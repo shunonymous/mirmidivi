@@ -41,18 +41,11 @@ set(Boost_USE_STATIC_RUNTIME ON)
 find_package(Boost 1.32 COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# RtMidi
-find_package(RtMidi)
-if(RTMIDI_FOUND)
-  include_directories(${RTMIDI_INCLUDE_DIR})
-endif()
-
 ### External projects are here
 add_subdirectory(lib/)
 include_directories(
   include/
   lib/dlldr/include
-  lib/jdksmidi/include
   )
 
 # Build

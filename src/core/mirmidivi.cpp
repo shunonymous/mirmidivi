@@ -1,7 +1,7 @@
 /*
  * mirmidivi is rendering midi as visual
  *
- * Copyright (C) 2016-2018 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2016-2019 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,11 @@
 #include <csignal>
 
 #include "mirmidivi/mirmidivi.hpp"
-#include "mirmidivi/midi.hpp"
+#include "mirmidivi/fluidsynth.hpp"
 
 #include "dlldr.hpp"
 
-
-//////////////////////////////////////////////////////////////
 // Handle SIGINT signal (Ctrl+C), for quit all loop thread. //
-//////////////////////////////////////////////////////////////
 bool QuitFlag;
 
 void Quit(int Signal)
@@ -36,8 +33,6 @@ void Quit(int Signal)
     QuitFlag = true;
     std::cout << "Interrupt." << std::endl;
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -49,29 +44,20 @@ int main(int argc, char** argv)
     QuitFlag = false;
     std::signal(SIGINT, Quit);
 
-    // Midi Data
-    MidiReceiver MidiReceivedData;
-    MidiUtils MidiInData;
-
-    // Using MIDI API
-    std::cout << "MIDI API:" << Options.getMidiInApi()  << std::endl;
-
     // Dynamic loading Libraries
     auto dlldr_mode =
 	shared_library::add_decorations +
 	shared_library::search_system_directories;
 	
-    shared_library MidiInLibrary("mirmidivi_" + Options.MidiInLibname.at(Options.getMidiInApi()), dlldr_mode);
-    shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
+    fluidsynth::Synth Synth(Options);
 
-    auto MidiIn = MidiInLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("MidiIn");
-    auto Rendering = RenderingLibrary.get_if<void(Option, MidiReceiver&, MidiUtils&, bool&)>("Rendering");
-    
-    // Launch threads
-    std::thread MidiInThread(MidiIn, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));
-    std::thread RenderingThread(Rendering, Options, std::ref(MidiReceivedData), std::ref(MidiInData), std::ref(QuitFlag));
+    // Load rendering library
+    shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
+    auto Rendering = RenderingLibrary.get_if<void(Option, fluidsynth::Synth&, bool&)>("Rendering");
+
+    // launch thread
+    std::thread RenderingThread(Rendering, Options, std::ref(Synth), std::ref(QuitFlag));
 
     // Wait thread exit
-    MidiInThread.join();
     RenderingThread.join();
 }

@@ -1,7 +1,7 @@
 /*
  * mirmidivi.hpp
  *
- * Copyright (C) 2015-2017 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2015-2019 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,42 +22,46 @@
 #include <string>
 #include <chrono>
 #include <unordered_map>
+#include <filesystem>
 
 namespace mirmidivi
 {
-    enum MidiApi{RTMIDI, FLUIDSYNTH};
-    enum MidiPlatform{ALSA_SEQ, JACK, COREMIDI, WIN32, SMF, DUMMY};
     enum RenderApi{CURSES, TEXT};
+    enum FluidSynthMode{SYNTH, PLAYER};
 
     // Store options from command-line args (or other)
     class Option
     {
     private:
 	// bool RealTime;
-	// bool RtMidi;
+	bool EnableAudio = false;
 	float FramePerSecond;
 //	int VertexResolution;
 //	int HorizonalResolution;
 	// bool FullScreen;
-	MidiApi MidiInApi;
-	MidiPlatform MidiInPlatform;
+	std::string AudioDriver;
+	std::string MidiDriver;
 	RenderApi RenderingApi;
+	std::vector<std::filesystem::path> SoundFontsPath;
+	std::filesystem::path SmfFilePath;
+	FluidSynthMode FluidSynthMode;
     public:
-	const std::unordered_map<MidiApi, std::string> MidiInLibname = {
-	    {RTMIDI, "RtMidi"},
-	    {FLUIDSYNTH, "fluidsynth"}
-	};
 	const std::unordered_map<RenderApi, std::string> RenderLibName = {
 	    {CURSES, "curses"},
-	    {TEXT, "PrintText"}
+	    {TEXT, "PrintMessage"}
 	};
 
-	void setFramePerSecond(float fps) { FramePerSecond = fps; }
-	float getFramePerSecond(){ return FramePerSecond; };
+	std::vector<std::filesystem::path> getSoundFontsPath() const { return SoundFontsPath; }
+	
+	std::string getMidiDriver() const { return MidiDriver; }
+	bool getAudioEnableFlag() const { return EnableAudio; }
+	std::string getAudioDriver() const { return AudioDriver; }
 
-	MidiApi getMidiInApi(){ return MidiInApi; }
-	MidiPlatform getMidiInPlatform(){ return MidiInPlatform; }
-	RenderApi getRenderingApi(){ return RenderingApi; }
+	enum RenderApi getRenderingApi() const { return RenderingApi; }
+	void setFramePerSecond(float fps) { FramePerSecond = fps; }
+	float getFramePerSecond() const { return FramePerSecond; }
+	enum FluidSynthMode getFluidSynthMode() const { return FluidSynthMode; }
+	
 	Option(int argc, char** argv);
     }; // class Option
 

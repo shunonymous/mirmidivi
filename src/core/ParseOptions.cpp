@@ -3,7 +3,7 @@
  *
  * This is a part of mirmidivi.
  *
- * Copyright (C) 2015-2016, 2018 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2015-2016, 2018-2019 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 #include <iterator>
 #include <vector>
 #include <string>
+#include <filesystem>
+
 #include <boost/program_options.hpp>
 
 #include "mirmidivi/mirmidivi.hpp"
@@ -39,7 +41,7 @@ namespace mirmidivi
 
 	// Declare mirmidivi options 
 	po::options_description Base("Options");
-	po::options_description Midi("MIDI");
+	po::options_description FluidSynth("FluidSynth");
 	po::options_description Render("Rendering");
 
 	// Set options
@@ -49,9 +51,17 @@ namespace mirmidivi
 	    ;
 
 	// About MIDI
-	Midi.add_options()
-	    ("midi-in-api", po::value<std::string>(), "API for input MIDI [RtMidi].\n")
-	    ("midi-in-platform,i", po::value<std::string>(), "Platform for input MIDI.\n")
+	FluidSynth.add_options()
+	    ("midi-driver", po::value<std::string>(&MidiDriver),
+	     "Select MIDI driver. \n"
+              "[alsa_raw, alsa_seq, coremidi, jack, midishare, oss, winmidi]")
+	    ("enable-audio,a", "Enable audio.")
+	    ("audio-driver", po::value<std::string>(&AudioDriver),
+	     "Select Audio driver.\n"
+	     "[alsa, coreaudio, dart, dsound, file, jack, oss, portaudio, pulseaudio, sdl2, sndman, waveout]")
+	    ("soundfont", po::value<std::vector<std::string>>()->multitoken(),
+	     "Set soundfont(s) path")
+	    ("smf", po::value<std::filesystem::path>(&SmfFilePath), "MIDI file path for playing. (WIP)")
 	    ;
 
 	// About render
@@ -62,7 +72,7 @@ namespace mirmidivi
 	po::variables_map vm;
 
 	// Merge options
-	Base.add(Midi).add(Render);
+	Base.add(FluidSynth).add(Render);
 
 	try{
 	    // Store options
@@ -76,43 +86,22 @@ namespace mirmidivi
 		exit(0);
 	    }
 	    
-	    std::string API;
-	    // Midi API
-	    if(vm.count("midi-in-api"))
-	    {
-		API = vm["midi-in-api"].as<std::string>();
-		if(API == "RtMidi")
-		    MidiInApi = RTMIDI;
-		else
-		{
-		    std::cerr << "mirmidivi has not " << API << " for midi-in." << std::endl;
-		    ExitFlag = true;
-		}
-	    } else
-		// If nothing to set midi-api
-		MidiInApi = RTMIDI;
+	    if(vm.count("enable-audio") or vm.count("audio-driver"))
+		EnableAudio = true;
 
-	    if(vm.count("midi-in-platform"))
-	    {
-		const std::string& platform = vm["midi-in-platform"].as<std::string>();
+	    for(const auto& s : vm["soundfont"].as<std::vector<std::string>>())
+		SoundFontsPath.push_back(std::filesystem::path(s));
 
-		if(platform == "alsa")
-		    MidiInPlatform = ALSA_SEQ;
-		else if(platform == "jack")
-		    MidiInPlatform = JACK;
-		else if(platform == "coremidi")
-		    MidiInPlatform = COREMIDI;
-		else if(platform == "win32")
-		    MidiInPlatform = WIN32;
-		else if(platform == "smf")
-		    MidiInPlatform = SMF;
-		else if(platform == "dummy")
-		    MidiInPlatform = DUMMY;
-	    }
+	    if(vm.count("smf"))
+		FluidSynthMode = PLAYER;
+	    else
+		FluidSynthMode = SYNTH;
 
 	    // Rendering API
 	    if(vm.count("rendering-api"))
 	    {
+		std::string API;
+
 		API = vm["rendering-api"].as<std::string>();
 		if(API == "text")
 		    RenderingApi = TEXT;

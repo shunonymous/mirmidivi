@@ -1,1 +1,0 @@
-../cmake/FindSTK.cmake
