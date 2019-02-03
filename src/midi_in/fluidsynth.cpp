@@ -73,6 +73,9 @@ namespace mirmidivi
 	void Synth::launchSmfPlayer(const Option& Options)
 	{
 	    smf_player = new_fluid_player(synth[synth_id]);
+	    fluid_player_set_playback_callback(smf_player, handleEvent, this);
+	    for(const auto& p : Options.getSmfFilePath())
+		fluid_player_add(smf_player, p.c_str());
 	}
 
 	Synth::Synth(const Option& Options)
@@ -95,6 +98,9 @@ namespace mirmidivi
 	    // Audio Driver
 	    if(Options.getAudioEnableFlag())
 		launchAudioDriver(Options);
+
+	    if(Options.getFluidSynthMode() == PLAYER)
+		fluid_player_play(smf_player);
 	}
 
 	Synth::~Synth()

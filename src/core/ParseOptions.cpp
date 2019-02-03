@@ -61,7 +61,7 @@ namespace mirmidivi
 	     "[alsa, coreaudio, dart, dsound, file, jack, oss, portaudio, pulseaudio, sdl2, sndman, waveout]")
 	    ("soundfont", po::value<std::vector<std::string>>()->multitoken(),
 	     "Set soundfont(s) path")
-	    ("smf", po::value<std::filesystem::path>(&SmfFilePath), "MIDI file path for playing. (WIP)")
+	    ("smf", po::value<std::vector<std::filesystem::path>>(&SmfFilePath)->multitoken(), "MIDI file path for playing. (WIP)")
 	    ;
 
 	// About render

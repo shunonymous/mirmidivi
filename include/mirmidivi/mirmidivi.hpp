@@ -43,7 +43,7 @@ namespace mirmidivi
 	std::string MidiDriver;
 	RenderApi RenderingApi;
 	std::vector<std::filesystem::path> SoundFontsPath;
-	std::filesystem::path SmfFilePath;
+	std::vector<std::filesystem::path> SmfFilePath;
 	FluidSynthMode FluidSynthMode;
     public:
 	const std::unordered_map<RenderApi, std::string> RenderLibName = {
@@ -52,7 +52,8 @@ namespace mirmidivi
 	};
 
 	std::vector<std::filesystem::path> getSoundFontsPath() const { return SoundFontsPath; }
-	
+	std::vector<std::filesystem::path> getSmfFilePath() const { return SmfFilePath; }
+
 	std::string getMidiDriver() const { return MidiDriver; }
 	bool getAudioEnableFlag() const { return EnableAudio; }
 	std::string getAudioDriver() const { return AudioDriver; }
