@@ -89,8 +89,9 @@ namespace mirmidivi
 	    if(vm.count("enable-audio") or vm.count("audio-driver"))
 		EnableAudio = true;
 
-	    for(const auto& s : vm["soundfont"].as<std::vector<std::string>>())
-		SoundFontsPath.push_back(std::filesystem::path(s));
+	    if(vm.count("soundfont"))
+		for(const auto& s : vm["soundfont"].as<std::vector<std::string>>())
+		    SoundFontsPath.push_back(std::filesystem::path(s));
 
 	    if(vm.count("smf"))
 		FluidSynthMode = PLAYER;
