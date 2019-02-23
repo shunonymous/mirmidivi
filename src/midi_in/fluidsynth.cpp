@@ -46,6 +46,17 @@ namespace mirmidivi
 	    // Audio Driver
 	    if(!Options.getAudioDriver().empty())
 		fluid_settings_setstr(settings, "audio.driver", Options.getAudioDriver().c_str());
+	    else {
+		// WORKAROUND:
+		// fluidplayer not working without audio driver,
+		// so create for output to null device
+		fluid_settings_setstr(settings, "audio.driver", "file");
+#if defined (__unix)
+		fluid_settings_setstr(settings, "audio.file.name", "/dev/null");
+#elif defined (_WIN32)
+		fluid_settings_setstr(settings, "audio.file.name", "nul");
+#endif
+	    }
 	}
 
 	int Synth::handleEvent(void* Data, fluid_midi_event_t* Event)
@@ -87,7 +98,7 @@ namespace mirmidivi
 	    mkSettings(Options);
 	    synth.push_back(new_fluid_synth(settings));
 
-	    // Midi Driverppp
+	    // Midi Driver
 	    if(Options.getFluidSynthMode() == SYNTH)
 		launchMidiDriver(Options);
 
@@ -96,9 +107,10 @@ namespace mirmidivi
 		launchSmfPlayer(Options);
 
 	    // Audio Driver
-	    if(Options.getAudioEnableFlag())
+//	    if(Options.getAudioEnableFlag()) // Comment out due to workaround
 		launchAudioDriver(Options);
 
+	    // SMF Player play
 	    if(Options.getFluidSynthMode() == PLAYER)
 		fluid_player_play(smf_player);
 	}
