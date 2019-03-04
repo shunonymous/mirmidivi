@@ -61,8 +61,10 @@ namespace mirmidivi
 
 	int Synth::handleEvent(void* Data, fluid_midi_event_t* Event)
 	{
-	    fluid_synth_handle_midi_event(static_cast<Synth*>(Data)->getSynth(), Event);
-	    static_cast<Synth*>(Data)->setEvent(Event);
+	    Synth* synth = static_cast<Synth*>(Data);
+	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
+	    synth->setEvent(Event);
+	    synth->pushEventToBuffer(synth->begin - sysclk::now(), Event);
 	    return 0;
 	}
 
@@ -113,6 +115,8 @@ namespace mirmidivi
 	    // SMF Player play
 	    if(Options.getFluidSynthMode() == PLAYER)
 		fluid_player_play(smf_player);
+
+	    begin = sysclk::now();
 	}
 
 	Synth::~Synth()

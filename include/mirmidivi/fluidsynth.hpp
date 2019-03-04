@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MIRMIDIVI_FLUIDSYNTH_HPP
+#define MIRMIDIVI_FLUIDSYNTH_HPP
+
 #include <memory>
 #include <filesystem>
+#include <chrono>
 #include <vector>
 
 #include <fluidsynth.h>
@@ -38,7 +42,10 @@ namespace mirmidivi
 	    fluid_audio_driver_t* audio_driver;
 	    int synth_id;
 	    int sound_font_id;
+	    std::vector<std::pair<sysclk::duration, fluid_midi_event_t*>> event_buffer;
 	    static std::vector<fluid_midi_event_t*> event; // due to callback
+	protected:
+	    sysclk::time_point begin;
 	public:
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
@@ -47,6 +54,9 @@ namespace mirmidivi
 
 	    fluid_midi_event_t* getEvent() const { return event[synth_id]; }
 	    void setEvent(fluid_midi_event_t* e) { event[synth_id] = e; }
+	    
+	    void pushEventToBuffer(sysclk::duration dura, fluid_midi_event_t* e) { event_buffer.push_back({dura, e}); }
+	    std::vector<std::pair<sysclk::duration, fluid_midi_event_t*>> getEventBuffer() const { return event_buffer; }
 	    fluid_synth_t* getSynth() const { return synth[synth_id]; }
 
 	    // Get message statuses
@@ -69,3 +79,5 @@ namespace mirmidivi
 	};
     }
 }
+
+#endif
