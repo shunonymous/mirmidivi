@@ -17,6 +17,9 @@
  *
  */
 
+#ifndef MIRMIDIVI_SLEEP_HPP
+#define MIRMIDIVI_SLEEP_HPP
+
 #include <chrono>
 #include <thread>
 
@@ -30,3 +33,5 @@ namespace mirmidivi
 	return std::this_thread::sleep_for(time);
     }
 }
+
+#endif

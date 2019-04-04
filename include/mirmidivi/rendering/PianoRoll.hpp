@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PIANOROLL_HPP
-#define PIANOROLL_HPP
+#ifndef MIRMIDIVI_RENDERING_PIANOROLL_HPP
+#define MIRMIDIVI_RENDERING_PIANOROLL_HPP
 
 #include <array>
 #include <vector>

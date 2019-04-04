@@ -21,6 +21,9 @@
  * 02110-1301, USA
  */
 
+#ifndef MIRMIDIVI_MESSAGE_HPP
+#define MIRMIDIVI_MESSAGE_HPP
+
 namespace mirmidivi
 {
     /***************************************************************
@@ -208,3 +211,5 @@ namespace mirmidivi
     };
 
 }
+
+#endif
