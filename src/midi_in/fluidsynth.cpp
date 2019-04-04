@@ -64,7 +64,9 @@ namespace mirmidivi
 	    Synth* synth = static_cast<Synth*>(Data);
 	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
 	    synth->setEvent(Event);
-	    synth->pushEventToBuffer(synth->begin - sysclk::now(), Event);
+	    std::lock_guard<std::mutex> lock(synth->mtx);
+	    for(const auto& f : synth->getTasks())
+		f.second(sysclk::now() - synth->getBeginTimePoint(), Event);
 	    return 0;
 	}
 

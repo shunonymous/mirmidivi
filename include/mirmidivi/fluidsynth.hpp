@@ -23,6 +23,9 @@
 #include <filesystem>
 #include <chrono>
 #include <vector>
+#include <functional>
+#include <map>
+#include <mutex>
 
 #include <fluidsynth.h>
 
@@ -32,6 +35,8 @@ namespace mirmidivi
 {
     namespace fluidsynth
     {
+	using Task = std::function<int(sysclk::duration, fluid_midi_event_t*)>;
+	
 	class Synth
 	{
 	private:
@@ -42,11 +47,12 @@ namespace mirmidivi
 	    fluid_audio_driver_t* audio_driver;
 	    int synth_id;
 	    int sound_font_id;
-	    std::vector<std::pair<sysclk::duration, fluid_midi_event_t*>> event_buffer;
 	    static std::vector<fluid_midi_event_t*> event; // due to callback
-	protected:
+	    std::map<int, Task> tasks;
+	    int task_id_count = 0;
 	    sysclk::time_point begin;
 	public:
+	    std::mutex mtx;
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
 	    void launchMidiDriver(const Option& Options);
@@ -55,8 +61,6 @@ namespace mirmidivi
 	    fluid_midi_event_t* getEvent() const { return event[synth_id]; }
 	    void setEvent(fluid_midi_event_t* e) { event[synth_id] = e; }
 	    
-	    void pushEventToBuffer(sysclk::duration dura, fluid_midi_event_t* e) { event_buffer.push_back({dura, e}); }
-	    std::vector<std::pair<sysclk::duration, fluid_midi_event_t*>> getEventBuffer() const { return event_buffer; }
 	    fluid_synth_t* getSynth() const { return synth[synth_id]; }
 
 	    // Get message statuses
@@ -69,8 +73,28 @@ namespace mirmidivi
 	    int getProgram() const { return fluid_midi_event_get_program(getEvent()); }
 	    int getPitchbend() const { return fluid_midi_event_get_pitch(getEvent()); }
 
+	    static int getType(fluid_midi_event_t* ev) { return fluid_midi_event_get_type(ev); }
+	    static int getChannel(fluid_midi_event_t* ev) { return fluid_midi_event_get_channel(ev); }
+	    static int getKey(fluid_midi_event_t* ev) { return fluid_midi_event_get_key(ev); }
+	    static int getVelocity(fluid_midi_event_t* ev) { return fluid_midi_event_get_velocity(ev); }
+	    static int getControl(fluid_midi_event_t* ev) { return fluid_midi_event_get_control(ev); }
+	    static int getValue(fluid_midi_event_t* ev) { return fluid_midi_event_get_value(ev); }
+	    static int getProgram(fluid_midi_event_t* ev) { return fluid_midi_event_get_program(ev); }
+	    static int getPitchbend(fluid_midi_event_t* ev) { return fluid_midi_event_get_pitch(ev); }
+
 	    // Hendle function calling when received message
 	    static int handleEvent(void* Data, fluid_midi_event_t* Event);
+
+	    // Tasks
+	    int addTask(Task t) {
+		tasks.insert({task_id_count, t});
+		return task_id_count++;
+	    }
+	    void dropTask(int id) { tasks.erase(id); }
+	    Task getTask(int id) { return tasks.at(id); }
+	    std::map<int, Task> getTasks() { return tasks; }
+
+	    sysclk::time_point getBeginTimePoint() { return begin; };
 
 	    // Constructor
 	    Synth();
