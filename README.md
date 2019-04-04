@@ -14,7 +14,7 @@ mirmidivi needs to build and run below softwares, so at the first, install it us
 * [CMake](https://cmake.org/)
 * [gcc](https://gcc.gnu.org/) or [clang](https://clang.llvm.org/)
 * curses (Now, tested only [ncurses](https://www.gnu.org/software/ncurses/))
-* [RtMidi](https://github.com/thestk/rtmidi)(or [STK](https://github.com/thestk/stk))
+* [fluidsynth](http://www.fluidsynth.org/)
 * [Boost C++ Libraries](http://www.boost.org/)
 
 Build
@@ -39,7 +39,7 @@ You can set install directory by `-DMIRMIDIVI_INSTALL_DIR`.
 	
 On this example, mirmidivi installed to ~/mirmidivi (Currentaly, not recommended to install to system).
 
-Testing
+Quick Start
 -------
 
 Set pathes for mirmidivi, and run.
@@ -50,21 +50,23 @@ Set pathes for mirmidivi, and run.
 	
 (n)curses interface is...
 
-	$ mirmidivi -g curses
+	$ mirmidivi -g curses 2> /dev/null
 
-Now, mirmidivi opened midi port, so you can see it (named "mirmidivi Input Client (by RtMidi)")
+Now, mirmidivi opened midi port, so you can see it (named "fluidsynth for mirmidivi")
 
 Serch mirmidivi's port number.
 
 	$ aconnect -o | grep mirmidivi
-	client 129: 'mirmidivi Input Client (by RtMidi)' [type=user,pid=29865]
-	    0 'mirmidivi       '
+	client 129: 'fluidsynth for mirmidivi' [type=user,pid=29865]
+	    0 'fluidsynth for mirmidivi'
 
 In this case, mirmidivi's port number is 129.
 
 OK, Let's send MIDI to mirmidivi!
 
 	$ aplaymidi -p 129 /path/to/your/favorite/smf/file.mid
+	
+mirmidivi has some options. see `mirmidivi -h`.
 
 License
 -------
