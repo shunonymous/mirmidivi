@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <thread>
+#include <memory>
 #include <csignal>
 
 #include "mirmidivi/mirmidivi.hpp"
@@ -49,14 +50,14 @@ int main(int argc, char** argv)
 	shared_library::add_decorations +
 	shared_library::search_system_directories;
 	
-    fluidsynth::Synth Synth(Options);
+    std::shared_ptr<fluidsynth::Synth> Synth(new fluidsynth::Synth(Options));
 
     // Load rendering library
     shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
-    auto Rendering = RenderingLibrary.get_if<void(Option, fluidsynth::Synth&, bool&)>("Rendering");
+    auto Rendering = RenderingLibrary.get_if<void(Option, std::shared_ptr<fluidsynth::Synth>, bool&)>("Rendering");
 
     // launch thread
-    std::thread RenderingThread(Rendering, Options, std::ref(Synth), std::ref(QuitFlag));
+    std::thread RenderingThread(Rendering, Options, Synth, std::ref(QuitFlag));
 
     // Wait thread exit
     RenderingThread.join();

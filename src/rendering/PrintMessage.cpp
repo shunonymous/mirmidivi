@@ -33,7 +33,7 @@ namespace mirmidivi
 {
     namespace PrintText
     {
-	void PrintMessage(Option Options, fluidsynth::Synth& Synth, bool& QuitFlag)
+	void PrintMessage(Option Options, const std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
 	{
 	    const int line_length = 60;
 	    const int type_length = 20;
@@ -43,8 +43,8 @@ namespace mirmidivi
 
 	    while(!QuitFlag)
 	    {
-		type = Synth.getType();
-		ch = Synth.getChannel();
+		type = Synth->getType();
+		ch = Synth->getChannel();
 
 		std::cout << std::setw(line_length);
 
@@ -53,46 +53,46 @@ namespace mirmidivi
 		case NOTE_ON:
 		    std::cout << std::left << std::setw(type_length) << "NOTE ON:"
 			      << "CH:" << std::setw(3) << ch
-			      << "NOTE:" << std::setw(4) << Synth.getKey()
-			      << "VELOCITY:" << Synth.getVelocity()
+			      << "NOTE:" << std::setw(4) << Synth->getKey()
+			      << "VELOCITY:" << Synth->getVelocity()
 			      << "\r";
 		    break;
 		case NOTE_OFF:
 		    std::cout << std::left << std::setw(type_length) << "NOTE OFF:"
 			      << "CH:" << std::setw(3) << ch
-			      << "NOTE:" << std::setw(4) << Synth.getKey()
+			      << "NOTE:" << std::setw(4) << Synth->getKey()
 			      << "\r";
 		    break;
 		case CONTROL_CHANGE:
 		    std::cout << std::left << std::setw(type_length) << "CONTROLL CHANGE:"
 			      << "CH:" << std::setw(3) << ch
-			      << "CONTROL:"  << std::setw(4)<< Synth.getControl()
-			      << "VAL:" << std::setw(4) << Synth.getValue()
+			      << "CONTROL:"  << std::setw(4)<< Synth->getControl()
+			      << "VAL:" << std::setw(4) << Synth->getValue()
 			      << "\r";
 		    break;
 		case PROGRAM_CHANGE:
 		    std::cout << std::left << std::setw(type_length) << "CONTROLL CHANGE:"
 			      << "CH:" << std::setw(3) << ch
-			      << "PROGRAM:" << std::setw(4) << Synth.getProgram()
+			      << "PROGRAM:" << std::setw(4) << Synth->getProgram()
 			      << "\r";
 		    break;
 		case CHANNEL_PRESSURE:
 		    std::cout << std::left << std::setw(type_length) << "CHANNEL PRESSURE:"
 			      << "CH:" << std::setw(3) << ch
-			      << "PROGRAM:" << std::setw(4) << Synth.getProgram()
+			      << "PROGRAM:" << std::setw(4) << Synth->getProgram()
 			      << "\r";
 		    break;
 		case KEY_PRESSURE:
 		    std::cout << std::left << std::setw(type_length) << "KEY PRESSURE:"
 			      << "CH:" << std::setw(3) << ch
-			      << "KEY:" << std::setw(4) << Synth.getKey()
-			      << "VAL:" << std::setw(4) << Synth.getValue()
+			      << "KEY:" << std::setw(4) << Synth->getKey()
+			      << "VAL:" << std::setw(4) << Synth->getValue()
 			      << "\r";
 		    break;
 		case PITCH_BEND:
 		    std::cout << std::left << std::setw(type_length) << "PITCH BEND:"
 			      << "CH:" << std::setw(3) << ch
-			      << "PITCH:" << std::setw(4) << Synth.getPitchbend()
+			      << "PITCH:" << std::setw(4) << Synth->getPitchbend()
 			      << "\r";
 		    break;
 		case MIDI_SYSTEM_RESET:
@@ -124,7 +124,7 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Option Options, mirmidivi::fluidsynth::Synth& Synth, bool& QuitFlag)
+extern "C" void Rendering(mirmidivi::Option Options, std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
     mirmidivi::PrintText::PrintMessage(Options, Synth, QuitFlag);

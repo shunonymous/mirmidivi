@@ -35,7 +35,7 @@ namespace mirmidivi
     private:
 	// bool RealTime;
 	bool EnableAudio = false;
-	float FramePerSecond;
+	float FramePerSecond = 60.0;
 //	int VertexResolution;
 //	int HorizonalResolution;
 	// bool FullScreen;

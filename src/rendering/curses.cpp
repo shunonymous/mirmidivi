@@ -20,12 +20,15 @@
 
 #include <iostream>
 #include <string>
-#include <iomanip>
+#include <thread>
 #include <vector>
+#include <algorithm>
 
 #include "mirmidivi/mirmidivi.hpp"
+#include "mirmidivi/fluidsynth.hpp"
+#include "mirmidivi/message.hpp"
 #include "mirmidivi/sleep.hpp"
-#include "mirmidivi/midi.hpp"
+#include "mirmidivi/rendering/PianoRoll.hpp"
 
 enum ExtColors
 {
@@ -41,8 +44,16 @@ namespace mirmidivi
 {
     namespace curses
     {
-	using Piano = std::vector<std::pair<bool, short>>;
-	using PianoRoll = std::vector<Piano>;
+	struct Point
+	{ int x = 0, y = 0; };
+
+	struct Screen
+	{
+	    Point Offset = {-2, 0};
+	    sysclk::duration ViewingTime = 0s;
+	    Point Size;
+	    int Scale = 1;
+	};
 
 	void InitCurses()
 	{
@@ -80,134 +91,103 @@ namespace mirmidivi
 	    refresh();
 	    curs_set(0);	    
 	}
-	
-	void RenderToCurses(Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
+
+	void DrawNote(const Note& Note, Screen& Screen, const sysclk::duration& BaseDuration)
 	{
-//	    auto FrameTime = 1s / Options.FramePerSecond;
-	    auto FrameTime = 1s / 60.0;
-	    float fps = 0.00;
-	    int FrameCount = 0;
+	    using namespace ::curses;
+	    using namespace std::chrono;
 
-	    int Channel, NoteNumber;
-	    PianoRoll PianoRollMap;
-	    int WorkingEventNumber = 0, CurrentEventNumber = 0;
+	    // Start drawing from beginning point.
+	    // Center of display is center, and C4(60) notes appear here as default.
+	    int BeginningPoint =
+		Screen.Size.x +	Screen.Offset.x -
+		(duration_cast<milliseconds>(BaseDuration - Note.BeginTime).count() * Screen.Scale * 0.1);
+	    int EndPoint = Screen.Size.x + Screen.Offset.x -
+		(duration_cast<milliseconds>(BaseDuration - Note.EndTime).count() * Screen.Scale * 0.1);
+	    int VertexPosition = (Screen.Size.y / 2) - Note.Scale + 60 + Screen.Offset.y;
 
-	    struct { int Width, Height; } TermSize;
-	    struct { int x, y; } StartingPiont;
+	    if(BeginningPoint < 0)
+		BeginningPoint = 0;
+	    if(EndPoint < 0)
+		EndPoint = 0;
+	    if(BeginningPoint > Screen.Size.x)
+		BeginningPoint = Screen.Size.x;
+	    if(EndPoint > Screen.Size.x)
+		EndPoint = Screen.Size.x;
 
-	    // Pre-reserve memory
-	    PianoRollMap.reserve(200);
-	    for(auto& PianoRoll : PianoRollMap)
-		PianoRoll.reserve(128);
-	    
-	    InitCurses();
-	    ::jdksmidi::MIDIClockTime CurrentTick = 0;
-	    Piano WritingBuffer(128,std::make_pair(false, 0));
+	    std::string prt;
+	    prt.append(EndPoint - BeginningPoint, '|');
 
-	    auto TimePoint = sysclk::now();
-	    auto FramePoint = sysclk::now();
-
-	    struct
+	    if(!prt.empty() and
+	       (0 <= VertexPosition) and (VertexPosition < Screen.Size.y))
 	    {
-		int Begin = 0, End = 0;
-	    } ScanningRange;
+		move(VertexPosition,
+		     BeginningPoint);
+		attrset(COLOR_PAIR(Note.Ch + 1));
+		printw(prt.c_str());
+	    }
+	}
+
+	void RenderToCurses(Option Options, const std::shared_ptr<fluidsynth::Synth> Synth, const bool& QuitFlag)
+	{
+	    Screen Screen;
+
+	    PianoRoll Drawer(Synth);
+	    InitCurses();
+	    ::curses::clear();
+
+	    int FrameCount = 0;
+	    auto RefreshdFpsPoint = sysclk::now();
+	    float fps;
+
+	    auto OneFrameDuration = 1s / Options.getFramePerSecond();
 
 	    while(!QuitFlag)
 	    {
 		using namespace ::curses;
-		auto Begin = sysclk::now();
 
-		// Set starting point
-		getmaxyx(stdscr, TermSize.Height, TermSize.Width);
-		StartingPiont.x = TermSize.Width;
-		StartingPiont.y = TermSize.Height / 2;
+		auto FrameBegin = sysclk::now();
+		sysclk::duration BaseDuration = (FrameBegin + Screen.ViewingTime) - Synth->getBeginTimePoint();
+		getmaxyx(stdscr, Screen.Size.y, Screen.Size.x);
 
-		CurrentTick = MidiInData.TimeToTick(Begin - TimePoint);
-		
-		MidiInData.MidiTracks->GetTrack(1)->FindEventNumber(CurrentTick, &CurrentEventNumber);
-
- 		for(;WorkingEventNumber < CurrentEventNumber; ++WorkingEventNumber)
-		{
-		    if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->IsNoteOn())
-		    {
-			NoteNumber = static_cast<int>(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetNote());
-			Channel = MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetChannel();
-
-			WritingBuffer[NoteNumber] = std::make_pair(true, Channel);
-		    } else if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->IsNoteOff())
-		    {
-			NoteNumber = static_cast<int>(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetNote());
-			Channel = MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->GetChannel();
-
-			WritingBuffer[NoteNumber] = std::make_pair(false, Channel);
-		    } else if(MidiInData.MidiTracks->GetTrack(1)->GetEvent(WorkingEventNumber)->IsAllNotesOff())
-		    {
-			for(auto&& Buf : WritingBuffer)
-			    Buf = std::make_pair(false, Channel);
-		    }
-		}
-		PianoRollMap.push_back(WritingBuffer);
-		
 		erase();
-			
-		ScanningRange.End = PianoRollMap.size() - 3;
-		if(PianoRollMap.size() < TermSize.Width)
-		    ScanningRange.Begin = 0;
-		else
-		    ScanningRange.Begin = ScanningRange.End - TermSize.Width + 3;
 
-		// Scan stored PianoRollMap between displaying area
-		for(int i = ScanningRange.Begin; i < ScanningRange.End; ++i)
-		{
-		    for(int NoteNum = 0; NoteNum <= 127; ++NoteNum)
-		    {
-			if(PianoRollMap[i][NoteNum].first)
-			{
-			    // C4(60) is center
-			    move(StartingPiont.y - NoteNum + 60, StartingPiont.x - (PianoRollMap.size() - i - 1));
-			    attrset(COLOR_PAIR(PianoRollMap[i][NoteNum].second + 1));
-			    printw("|");
-			}
-		    }
-		}
+		for(const auto& Note : Drawer.getNotes(BaseDuration - (5s * Screen.Scale), BaseDuration))
+		    DrawNote(Note, Screen, BaseDuration);
 
-		if(PianoRollMap.size() > 8192)
-		{
-		    PianoRollMap.erase(PianoRollMap.begin(), PianoRollMap.begin() + 512);
-		    ScanningRange.Begin = ScanningRange.Begin - 512;
-		    ScanningRange.End = ScanningRange.End - 512;
-		}
-		
-		while((sysclk::now() - Begin) <= FrameTime)
-		{
-		    sleep(10us);
-		}
-
-
-		FrameCount++;
 		// Display infos
-		move(TermSize.Height - 1, TermSize.Width - 8);
+		++FrameCount;
+		move(Screen.Size.y - 1, Screen.Size.x - 11);
 		attrset(COLOR_WHITE);
-		printw("%.2ffps", fps);
-		move(TermSize.Height - 2, TermSize.Width - 15);
-		printw("size:%dx%d", TermSize.Width, TermSize.Height);
-		if (sysclk::now() - FramePoint >= 5s)
+		printw("%5.2ffps", fps);
+		move(Screen.Size.y - 2, Screen.Size.x - 15);
+		printw("size:%dx%d", Screen.Size.x, Screen.Size.y);
+		float TimeDiff = std::chrono::duration_cast<std::chrono::seconds>(sysclk::now() - RefreshdFpsPoint).count();
+		if (TimeDiff >= 5)
 		{
-		    fps = FrameCount / 5.00;
+		    fps = FrameCount / TimeDiff;
 		    FrameCount = 0;
-		    FramePoint = sysclk::now();
+		    RefreshdFpsPoint = sysclk::now();
 		}
-		refresh();
 
-	    } // while(!QuitFlag)
+		// Note counter
+		move(Screen.Size.y - 1, 2);
+		attrset(COLOR_WHITE);
+		printw("NOTES:%d", Drawer.getNotes().size());
+
+		while((sysclk::now() - FrameBegin) < OneFrameDuration)
+		    sleep(0.1ms);
+
+		refresh();
+	    }
 	    ::curses::endwin();
 	} // void PrintMessage
     } // namespace curses
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Option Options, mirmidivi::MidiReceiver& MidiReceivedData, mirmidivi::MidiUtils& MidiInData, bool& QuitFlag)
+extern "C" void Rendering(mirmidivi::Option Options, const std::shared_ptr<mirmidivi::fluidsynth::Synth> Synth, const bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
-    mirmidivi::curses::RenderToCurses(Options, MidiReceivedData, MidiInData, QuitFlag);
+    mirmidivi::curses::RenderToCurses(Options, Synth, QuitFlag);
 }

@@ -27,8 +27,7 @@
 #include "mirmidivi/fluidsynth.hpp"
 #include "mirmidivi/message.hpp"
 #include "mirmidivi/sleep.hpp"
-
-#include "PianoRoll.hpp"
+#include "mirmidivi/rendering/PianoRoll.hpp"
 
 namespace mirmidivi
 {

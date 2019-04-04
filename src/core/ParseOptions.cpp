@@ -54,7 +54,7 @@ namespace mirmidivi
 	FluidSynth.add_options()
 	    ("midi-driver", po::value<std::string>(&MidiDriver),
 	     "Select MIDI driver. \n"
-              "[alsa_raw, alsa_seq, coremidi, jack, midishare, oss, winmidi]")
+	     "[alsa_raw, alsa_seq, coremidi, jack, midishare, oss, winmidi]")
 	    ("enable-audio,a", "Enable audio.")
 	    ("audio-driver", po::value<std::string>(&AudioDriver),
 	     "Select Audio driver.\n"
