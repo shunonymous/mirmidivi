@@ -36,8 +36,8 @@ namespace mirmidivi
 	// bool RealTime;
 	bool EnableAudio = false;
 	float FramePerSecond = 60.0;
-//	int VertexResolution;
-//	int HorizonalResolution;
+	// int VertexResolution;
+	// int HorizonalResolution;
 	// bool FullScreen;
 	std::string AudioDriver;
 	std::string MidiDriver;

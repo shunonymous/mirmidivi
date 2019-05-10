@@ -26,7 +26,7 @@
 
 #include "dlldr.hpp"
 
-// Handle SIGINT signal (Ctrl+C), for quit all loop thread. //
+// Handle SIGINT signal (Ctrl+C), for quit all loop thread. 
 bool QuitFlag;
 
 void Quit(int Signal)
@@ -46,19 +46,33 @@ int main(int argc, char** argv)
     std::signal(SIGINT, Quit);
 
     // Dynamic loading Libraries
-    auto dlldr_mode =
+    const auto dlldr_mode =
 	shared_library::add_decorations +
 	shared_library::search_system_directories;
-	
-    std::shared_ptr<fluidsynth::Synth> Synth(new fluidsynth::Synth(Options));
 
-    // Load rendering library
-    shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
-    auto Rendering = RenderingLibrary.get_if<void(Option, std::shared_ptr<fluidsynth::Synth>, bool&)>("Rendering");
+    bool ReloadFlag = false;
+    do
+    {
+	// Load rendering library
+	shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
 
-    // launch thread
-    std::thread RenderingThread(Rendering, Options, Synth, std::ref(QuitFlag));
+	std::thread RenderingThread;
+	if(Options.getFluidSynthMode() == SYNTH)
+	{
+	    std::shared_ptr<fluidsynth::Synth> Synth(new fluidsynth::Synth(Options));
+	    auto Rendering = RenderingLibrary.get_if<void(Option&, std::shared_ptr<fluidsynth::Synth>, bool&)>("SynthRendering");
+	    // launch thread
+	    RenderingThread = std::thread(Rendering, std::ref(Options), Synth, std::ref(QuitFlag));
+	}
+	else if (Options.getFluidSynthMode() == PLAYER)
+	{
+	    std::shared_ptr<fluidsynth::Player> Player(new fluidsynth::Player(Options));
+	    auto Rendering = RenderingLibrary.get_if<void(Option&, std::shared_ptr<fluidsynth::Player>, bool&)>("PlayerRendering");
+	    // launch thread
+	    RenderingThread = std::thread(Rendering, std::ref(Options), Player, std::ref(QuitFlag));
+	}
 
-    // Wait thread exit
-    RenderingThread.join();
+	// Wait thread exit
+	RenderingThread.join();
+    } while(ReloadFlag);
 }

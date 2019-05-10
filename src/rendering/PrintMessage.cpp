@@ -33,7 +33,7 @@ namespace mirmidivi
 {
     namespace PrintText
     {
-	void PrintMessage(Option Options, const std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
+	void PrintMessage(const Option& Options, const std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
 	{
 	    const int line_length = 60;
 	    const int type_length = 20;
@@ -124,8 +124,16 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Option Options, std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
+extern "C" void SynthRendering(const mirmidivi::Option& Options, std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
     mirmidivi::PrintText::PrintMessage(Options, Synth, QuitFlag);
 }
+
+// Call from external source    
+extern "C" void PlayerRendering(const mirmidivi::Option& Options, std::shared_ptr<mirmidivi::fluidsynth::Player>& Player, bool& QuitFlag)
+{
+    std::cout << "Rendering called" << std::endl;
+    mirmidivi::PrintText::PrintMessage(Options, Player->getSynth(), QuitFlag);
+}
+

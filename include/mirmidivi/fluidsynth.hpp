@@ -25,7 +25,6 @@
 #include <vector>
 #include <functional>
 #include <map>
-#include <mutex>
 
 #include <fluidsynth.h>
 
@@ -35,6 +34,10 @@ namespace mirmidivi
 {
     namespace fluidsynth
     {
+	class Synth;
+	class Player;
+	struct Controller;
+
 	using Task = std::function<int(sysclk::duration, fluid_midi_event_t*)>;
 	
 	class Synth
@@ -43,7 +46,6 @@ namespace mirmidivi
 	    fluid_settings_t* settings;
 	    static std::vector<fluid_synth_t*> synth; // due to callback
 	    fluid_midi_driver_t* midi_driver;
-	    fluid_player_t* smf_player;
 	    fluid_audio_driver_t* audio_driver;
 	    int synth_id;
 	    int sound_font_id;
@@ -52,7 +54,6 @@ namespace mirmidivi
 	    int task_id_count = 0;
 	    sysclk::time_point begin;
 	public:
-	    std::mutex mtx;
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
 	    void launchMidiDriver(const Option& Options);
@@ -100,7 +101,30 @@ namespace mirmidivi
 	    Synth();
 	    Synth(const Option& Options);
 	    ~Synth();
+
+	    Synth& operator()(const Option& Options) { return *this; }
+	    Synth& operator=(Synth&& Synth) { return *this; }
+
+	    friend Player;
 	};
+
+	class Player
+	{
+	private:
+	    std::shared_ptr<Synth> Synth;
+	    void launchSmfPlayer(const Option& Options);
+
+	    fluid_player_t* smf_player;
+	public:
+	    std::shared_ptr<class Synth> getSynth() const { return Synth; }
+
+	    Player();
+	    Player(const Option& Options);
+	    ~Player(){}
+	};
+
+	struct Controller
+	{};
     }
 }
 

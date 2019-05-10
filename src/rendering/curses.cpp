@@ -128,7 +128,7 @@ namespace mirmidivi
 	    }
 	}
 
-	void RenderToCurses(Option Options, const std::shared_ptr<fluidsynth::Synth> Synth, const bool& QuitFlag)
+	void RenderToCurses(const Option& Options, const std::shared_ptr<fluidsynth::Synth>& Synth, const bool& QuitFlag)
 	{
 	    Screen Screen;
 
@@ -186,8 +186,14 @@ namespace mirmidivi
 } // namespace mirmidivi
 
 // Call from external source    
-extern "C" void Rendering(mirmidivi::Option Options, const std::shared_ptr<mirmidivi::fluidsynth::Synth> Synth, const bool& QuitFlag)
+extern "C" void SynthRendering(const mirmidivi::Option& Options, std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth, bool& QuitFlag)
 {
     std::cout << "Rendering called" << std::endl;
     mirmidivi::curses::RenderToCurses(Options, Synth, QuitFlag);
+}
+
+extern "C" void PlayerRendering(const mirmidivi::Option& Options, std::shared_ptr<mirmidivi::fluidsynth::Player>& Player, bool& QuitFlag)
+{
+    std::cout << "Rendering called" << std::endl;
+    mirmidivi::curses::RenderToCurses(Options, Player->getSynth(), QuitFlag);
 }

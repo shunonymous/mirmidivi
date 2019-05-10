@@ -54,7 +54,7 @@ namespace mirmidivi
 	    return getNotes(Begin - Synth->getBeginTimePoint(), End - Synth ->getBeginTimePoint()); }
 	std::vector<Note> getNotes(sysclk::duration Begin) { return getNotes(Begin, sysclk::now() - Synth->getBeginTimePoint()); }
 	std::vector<Note> getNotes(sysclk::duration Begin, sysclk::duration End);
-	std::vector<Note> getNotes() {
+	const std::vector<Note>& getNotes() {
 //	    for(auto& Note : Notes)
 //		if(Note.Ringing)
 //		    Note.EndTime = sysclk::now() - Synth->getBeginTimePoint();

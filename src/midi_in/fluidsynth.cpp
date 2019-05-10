@@ -64,7 +64,6 @@ namespace mirmidivi
 	    Synth* synth = static_cast<Synth*>(Data);
 	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
 	    synth->setEvent(Event);
-	    std::lock_guard<std::mutex> lock(synth->mtx);
 	    for(const auto& f : synth->getTasks())
 		f.second(sysclk::now() - synth->getBeginTimePoint(), Event);
 	    return 0;
@@ -85,14 +84,6 @@ namespace mirmidivi
 	    }
 	}
 
-	void Synth::launchSmfPlayer(const Option& Options)
-	{
-	    smf_player = new_fluid_player(synth[synth_id]);
-	    fluid_player_set_playback_callback(smf_player, handleEvent, this);
-	    for(const auto& p : Options.getSmfFilePath())
-		fluid_player_add(smf_player, p.c_str());
-	}
-
 	Synth::Synth(const Option& Options)
 	{
 	    synth_id = event.size();
@@ -106,24 +97,18 @@ namespace mirmidivi
 	    if(Options.getFluidSynthMode() == SYNTH)
 		launchMidiDriver(Options);
 
-	    // SMF Player
-	    if(Options.getFluidSynthMode() == PLAYER)
-		launchSmfPlayer(Options);
 
 	    // Audio Driver
 //	    if(Options.getAudioEnableFlag()) // Comment out due to workaround
 		launchAudioDriver(Options);
-
-	    // SMF Player play
-	    if(Options.getFluidSynthMode() == PLAYER)
-		fluid_player_play(smf_player);
 
 	    begin = sysclk::now();
 	}
 
 	Synth::~Synth()
 	{
-/*	    if(settings)
+	    /*
+	    if(settings)
 		delete_fluid_settings(settings);
 	    if(synth)
 		delete_fluid_synth(synth);
@@ -133,6 +118,28 @@ namespace mirmidivi
 		delete_fluid_player(smf_player);
 	    if(audio_driver)
 		delete_fluid_audio_driver(audio_driver);
-*/	}
+	    */
+	}
+
+	void Player::launchSmfPlayer(const Option& Options)
+	{
+	    smf_player = new_fluid_player(getSynth()->getSynth());
+	    fluid_player_set_playback_callback(smf_player, Synth::handleEvent, getSynth().get());
+	    for(const auto& p : Options.getSmfFilePath())
+		fluid_player_add(smf_player, p.c_str());
+	}
+
+	Player::Player(const Option& Options)
+	{
+	    Synth = std::shared_ptr<class Synth>(new class Synth(Options));
+
+	    // SMF Player
+	    if(Options.getFluidSynthMode() == PLAYER)
+		launchSmfPlayer(Options);
+
+	    // SMF Player play
+	    if(Options.getFluidSynthMode() == PLAYER)
+		fluid_player_play(smf_player);
+	}
     }
 }

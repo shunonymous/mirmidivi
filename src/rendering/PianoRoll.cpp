@@ -21,7 +21,6 @@
 #include <functional>
 #include <thread>
 #include <algorithm>
-#include <mutex>
 #include <chrono>
 
 #include "mirmidivi/fluidsynth.hpp"
