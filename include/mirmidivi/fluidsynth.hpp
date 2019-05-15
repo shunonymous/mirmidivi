@@ -118,13 +118,23 @@ namespace mirmidivi
 	public:
 	    std::shared_ptr<class Synth> getSynth() const { return Synth; }
 
+	    void addToQueue(std::filesystem::path File) { fluid_player_add(smf_player, File.c_str()); }
+	    void play() { fluid_player_play(smf_player); }
+	    void stop() { fluid_player_stop(smf_player); }
+	    void waitForEnd() { fluid_player_join(smf_player); }
+	    void setTempo(int Tempo) { fluid_player_set_midi_tempo(smf_player, Tempo); }
+	    void setBpm(int Bpm) { fluid_player_set_bpm(smf_player, Bpm); }
+	    fluid_player_status getStatus() { return static_cast<fluid_player_status>(fluid_player_get_status(smf_player)); }
+	    int getCurrentTick() { return fluid_player_get_current_tick(smf_player); }
+	    int getTotalTicks() { return fluid_player_get_total_ticks(smf_player); }
+	    int getBpm() { return fluid_player_get_bpm(smf_player); }
+	    int getTempo() { return fluid_player_get_midi_tempo(smf_player); }
+	    void seek(int Tick) { fluid_player_seek(smf_player, Tick); }
+
 	    Player();
 	    Player(const Option& Options);
 	    ~Player(){}
 	};
-
-	struct Controller
-	{};
     }
 }
 
