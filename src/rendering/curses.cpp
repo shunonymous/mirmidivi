@@ -3,7 +3,7 @@
  *
  * This program is part of mirmidivi
  *
- * Copyright (C) 2017 Shun Terabayashi <shunonymous@gmail.com>
+ * Copyright (C) 2017-2019 Shun Terabayashi <shunonymous@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "mirmidivi/message.hpp"
 #include "mirmidivi/sleep.hpp"
 #include "mirmidivi/rendering/PianoRoll.hpp"
+#include "mirmidivi/rendering/Msg2Txt.hpp"
 
 enum ExtColors
 {
@@ -171,9 +172,14 @@ namespace mirmidivi
 		}
 
 		// Note counter
-		move(Screen.Size.y - 1, 2);
+		move(Screen.Size.y - 2, 2);
 		attrset(COLOR_WHITE);
 		printw("NOTES:%d", Drawer.getNotes().size());
+
+		// Print message
+		move(Screen.Size.y - 1, 2);
+		attrset(COLOR_WHITE);
+		printw(Msg2Txt(Synth).c_str());
 
 		while((sysclk::now() - FrameBegin) < OneFrameDuration)
 		    sleep(0.1ms);
