@@ -19,12 +19,9 @@
 #ifndef MIRMIDIVI_RENDERING_MSG2TXT_HPP
 #define MIRMIDIVI_RENDERING_MSG2TXT_HPP
 
-#include <string>
-#include <sstream>
-#include <iomanip>
+#include <memory>
 
 #include "mirmidivi/fluidsynth.hpp"
-#include "mirmidivi/message.hpp"
 
 namespace mirmidivi
 {
