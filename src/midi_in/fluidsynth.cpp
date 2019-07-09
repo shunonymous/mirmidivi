@@ -18,6 +18,7 @@
 
 #include <string>
 #include <iostream>
+#include <mutex>
 
 #include <fluidsynth.h>
 
@@ -29,8 +30,9 @@ namespace mirmidivi
     namespace fluidsynth
     {
 	// Initialize static values.
-	std::vector<fluid_synth_t*> Synth::synth = {};
-	std::vector<fluid_midi_event_t*> Synth::event = {};
+	std::vector<fluid_synth_t*> Synth::synth_callback = {};
+	std::vector<fluid_midi_event_t*> Synth::event_callback = {};
+	int Synth::synth_count = 0;
 
 	void Synth::mkSettings(const Option& Options)
 	{
@@ -62,6 +64,7 @@ namespace mirmidivi
 	int Synth::handleEvent(void* Data, fluid_midi_event_t* Event)
 	{
 	    Synth* synth = static_cast<Synth*>(Data);
+	    std::lock_guard<std::mutex> Locker(synth->mtx_callback);
 	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
 	    synth->setEvent(Event);
 	    for(const auto& f : synth->getTasks())
@@ -76,22 +79,24 @@ namespace mirmidivi
 
 	void Synth::launchAudioDriver(const Option& Options)
 	{
-	    audio_driver = new_fluid_audio_driver(settings, synth[synth_id]);
+	    audio_driver = new_fluid_audio_driver(settings, synth);
 	    for(const auto& sf : Options.getSoundFontsPath())
 	    {
 		std::cout << sf.c_str() << std::endl;
-		fluid_synth_sfload(synth[synth_id], sf.c_str(), 1);
+		fluid_synth_sfload(synth, sf.c_str(), 1);
 	    }
 	}
 
 	Synth::Synth(const Option& Options)
 	{
-	    synth_id = event.size();
-	    event.push_back(new_fluid_midi_event());
-
+	    synth_id = synth_count++;
+	    event_callback.push_back(new_fluid_midi_event());
+	    event = event_callback[synth_id];
+	    
 	    // Settings part
 	    mkSettings(Options);
-	    synth.push_back(new_fluid_synth(settings));
+	    synth_callback.push_back(new_fluid_synth(settings));
+	    synth = synth_callback[synth_id];
 
 	    // Midi Driver
 	    if(Options.getFluidSynthMode() == SYNTH)
@@ -107,17 +112,17 @@ namespace mirmidivi
 
 	Synth::~Synth()
 	{
-	    /*
+	    std::lock_guard<std::mutex> Locker(mtx_callback);
+	    std::cout << "destructed" << std::endl;
+	    /* 
 	    if(settings)
 		delete_fluid_settings(settings);
 	    if(synth)
 		delete_fluid_synth(synth);
 	    if(midi_driver)
 		delete_fluid_midi_driver(midi_driver);
-	    if(smf_player)
-		delete_fluid_player(smf_player);
 	    if(audio_driver)
-		delete_fluid_audio_driver(audio_driver);
+	    delete_fluid_audio_driver(audio_driver); 
 	    */
 	}
 

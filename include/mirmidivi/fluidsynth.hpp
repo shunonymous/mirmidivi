@@ -25,6 +25,7 @@
 #include <vector>
 #include <functional>
 #include <map>
+#include <mutex>
 
 #include <fluidsynth.h>
 
@@ -44,25 +45,29 @@ namespace mirmidivi
 	{
 	private:
 	    fluid_settings_t* settings;
-	    static std::vector<fluid_synth_t*> synth; // due to callback
+	    static std::vector<fluid_synth_t*> synth_callback; // due to callback
+	    static int synth_count;
+	    fluid_synth_t* synth;
 	    fluid_midi_driver_t* midi_driver;
 	    fluid_audio_driver_t* audio_driver;
 	    int synth_id;
 	    int sound_font_id;
-	    static std::vector<fluid_midi_event_t*> event; // due to callback
+	    static std::vector<fluid_midi_event_t*> event_callback; // due to callback
+	    fluid_midi_event_t* event;
 	    std::map<int, Task> tasks;
 	    int task_id_count = 0;
 	    sysclk::time_point begin;
 	public:
+	    std::mutex mtx_callback;
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
 	    void launchMidiDriver(const Option& Options);
 	    void launchAudioDriver(const Option& Options);
 
-	    fluid_midi_event_t* getEvent() const { return event[synth_id]; }
-	    void setEvent(fluid_midi_event_t* e) { event[synth_id] = e; }
+	    fluid_midi_event_t* getEvent() const { return event; }
+	    void setEvent(fluid_midi_event_t* e) { event = e; }
 	    
-	    fluid_synth_t* getSynth() const { return synth[synth_id]; }
+	    fluid_synth_t* getSynth() const { return synth; }
 
 	    // Get message statuses
 	    int getType() const { return fluid_midi_event_get_type(getEvent()); }
@@ -116,7 +121,7 @@ namespace mirmidivi
 
 	    fluid_player_t* smf_player;
 	public:
-	    std::shared_ptr<class Synth> getSynth() const { return Synth; }
+	    std::shared_ptr<class Synth>& getSynth() { return Synth; }
 
 	    void addToQueue(std::filesystem::path File) { fluid_player_add(smf_player, File.c_str()); }
 	    void play() { fluid_player_play(smf_player); }
