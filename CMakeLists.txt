@@ -1,10 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.4)
 project(mirmidivi CXX C)
 
 option(MIRMIDIVI_INSTALL_DIR "Set install path." /usr)
 
 ### C++ Version
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Version
 set (VERSION_MAJOR "0")
@@ -26,6 +28,17 @@ set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
   )
+
+message("${CMAKE_CXX_FLAGS_DEBUG}")
+message("${CMAKE_CXX_COMPILER_ID}")
+
+
+# Warning
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra --pedantic-errors")
+endif()
+
+message("${CMAKE_CXX_FLAGS_DEBUG}")
 
 ### Set depended libraries
 # Thread
