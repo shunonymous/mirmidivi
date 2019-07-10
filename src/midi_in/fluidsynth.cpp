@@ -113,17 +113,6 @@ namespace mirmidivi
 	Synth::~Synth()
 	{
 	    std::lock_guard<std::mutex> Locker(mtx_callback);
-	    std::cout << "destructed" << std::endl;
-	    /* 
-	    if(settings)
-		delete_fluid_settings(settings);
-	    if(synth)
-		delete_fluid_synth(synth);
-	    if(midi_driver)
-		delete_fluid_midi_driver(midi_driver);
-	    if(audio_driver)
-	    delete_fluid_audio_driver(audio_driver); 
-	    */
 	}
 
 	void Player::launchSmfPlayer(const Option& Options)

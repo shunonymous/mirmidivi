@@ -121,7 +121,7 @@ namespace mirmidivi
 
 	    fluid_player_t* smf_player;
 	public:
-	    std::shared_ptr<class Synth>& getSynth() { return Synth; }
+	    std::shared_ptr<class Synth> getSynth() { return Synth; }
 
 	    void addToQueue(std::filesystem::path File) { fluid_player_add(smf_player, File.c_str()); }
 	    void play() { fluid_player_play(smf_player); }

@@ -17,12 +17,11 @@
  */
 
 #include <iostream>
-#include <thread>
 #include <memory>
 #include <csignal>
+#include <algorithm>
 
 #include "mirmidivi/mirmidivi.hpp"
-#include "mirmidivi/fluidsynth.hpp"
 
 #include "dlldr.hpp"
 
@@ -45,34 +44,19 @@ int main(int argc, char** argv)
     QuitFlag = false;
     std::signal(SIGINT, Quit);
 
+    // When not unsafe mode, GUI Toolkit API must listed
+    if(!Options.getUnsafeMode() and
+       std::find(UiToolKitList.begin(), UiToolKitList.end(), Options.getUiToolKit()) == UiToolKitList.end())
+	throw "mirmidivi has not " + Options.getRenderingApi();
+    
     // Dynamic loading Libraries
     const auto dlldr_mode =
 	shared_library::add_decorations +
 	shared_library::search_system_directories;
 
-    bool ReloadFlag = false;
-    do
-    {
-	// Load rendering library
-	shared_library RenderingLibrary("mirmidivi_" + Options.RenderLibName.at(Options.getRenderingApi()), dlldr_mode);
-
-	std::thread RenderingThread;
-	if(Options.getFluidSynthMode() == SYNTH)
-	{
-	    std::shared_ptr<fluidsynth::Synth> Synth(new fluidsynth::Synth(Options));
-	    auto Rendering = RenderingLibrary.get_if<void(Option&, std::shared_ptr<fluidsynth::Synth>, bool&)>("SynthRendering");
-	    // launch thread
-	    RenderingThread = std::thread(Rendering, std::ref(Options), Synth, std::ref(QuitFlag));
-	}
-	else if (Options.getFluidSynthMode() == PLAYER)
-	{
-	    std::shared_ptr<fluidsynth::Player> Player(new fluidsynth::Player(Options));
-	    auto Rendering = RenderingLibrary.get_if<void(Option&, std::shared_ptr<fluidsynth::Player>, bool&)>("PlayerRendering");
-	    // launch thread
-	    RenderingThread = std::thread(Rendering, std::ref(Options), Player, std::ref(QuitFlag));
-	}
-
-	// Wait thread exit
-	RenderingThread.join();
-    } while(ReloadFlag);
+    // Load UI ToolKit
+    shared_library UiToolKitLibrary("mirmidivi_" + Options.getUiToolKit(), dlldr_mode);
+    auto UiToolKit = UiToolKitLibrary.get_if<void(Option&, bool&)>("InitUiToolKit");
+    UiToolKit(std::ref(Options), std::ref(QuitFlag));
+    std::cout << "End of mirmidivi" << std::endl;
 }

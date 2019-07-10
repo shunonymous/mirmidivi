@@ -47,7 +47,9 @@ namespace mirmidivi
 	// Set options
 	Base.add_options()
 	    ("help,h", "Print this help and exit.")
-	    ("rendering-api,g", po::value<std::string>(), "The name of the rendering API to use [text, curses].")
+	    ("rendering-api,g", po::value<std::string>(&RenderingApi), "The name of the rendering API to use [text, curses, opengl].")
+	    ("toolkit", po::value<std::string>(&UiToolKit), "UI Toolkit for drawing window [no_toolkit, glfw].")
+	    ("unsafe-mode", po::value<bool>(&Unsafe), "Allow third-party module (may causing security issue, license impact to ouput, and so on...) [true, false]")
 	    ;
 
 	// About MIDI
@@ -59,7 +61,7 @@ namespace mirmidivi
 	    ("audio-driver", po::value<std::string>(&AudioDriver),
 	     "Select Audio driver.\n"
 	     "[alsa, coreaudio, dart, dsound, file, jack, oss, portaudio, pulseaudio, sdl2, sndman, waveout]")
-	    ("soundfont", po::value<std::vector<std::string>>()->multitoken(),
+	    ("soundfont", po::value<std::vector<std::filesystem::path>>(&SoundFontsPath)->multitoken(),
 	     "Set soundfont(s) path")
 	    ("smf", po::value<std::vector<std::filesystem::path>>(&SmfFilePath)->multitoken(), "MIDI file path for playing. (WIP)")
 	    ;
@@ -89,35 +91,11 @@ namespace mirmidivi
 	    if(vm.count("enable-audio") or vm.count("audio-driver"))
 		EnableAudio = true;
 
-	    if(vm.count("soundfont"))
-		for(const auto& s : vm["soundfont"].as<std::vector<std::string>>())
-		    SoundFontsPath.push_back(std::filesystem::path(s));
-
 	    if(vm.count("smf"))
 		FluidSynthMode = PLAYER;
 	    else
 		FluidSynthMode = SYNTH;
-
-	    // Rendering API
-	    if(vm.count("rendering-api"))
-	    {
-		std::string API;
-
-		API = vm["rendering-api"].as<std::string>();
-		if(API == "text")
-		    RenderingApi = TEXT;
-		else if(API == "curses")
-		    RenderingApi = CURSES;
-		else
-		{
-		    std::cerr << "mirmidivi has not " << vm["rend-api"].as<std::string>() << " for rendering." << std::endl;
-		    ExitFlag = true;
-		}
-	    } else
-		// If nothing to set rend-api
-		RenderingApi = TEXT;
-	} // try
-
+	}
 	// Error handling
 	catch(std::exception& e)
 	{

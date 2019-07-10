@@ -19,6 +19,7 @@
 #ifndef MIRMIDIVI_HPP
 #define MIRMIDIVI_HPP
 
+#include <vector>
 #include <string>
 #include <chrono>
 #include <unordered_map>
@@ -26,43 +27,50 @@
 
 namespace mirmidivi
 {
-    enum RenderApi{CURSES, TEXT};
     enum FluidSynthMode{SYNTH, PLAYER};
+
+    const std::vector<std::string_view> RenderingLibrariesList = {
+	"text",
+	"curses"
+    };
+
+    const std::vector<std::string_view> UiToolKitList = {
+	"no_toolkit",
+	"glfw"
+    };
 
     // Store options from command-line args (or other)
     class Option
     {
     private:
-	// bool RealTime;
 	bool EnableAudio = false;
 	float FramePerSecond = 60.0;
+	std::string UiToolKit = UiToolKitList[0].data();
 	// int VertexResolution;
 	// int HorizonalResolution;
 	// bool FullScreen;
 	std::string AudioDriver;
 	std::string MidiDriver;
-	RenderApi RenderingApi;
+	std::string RenderingApi = RenderingLibrariesList[0].data();
 	std::vector<std::filesystem::path> SoundFontsPath;
 	std::vector<std::filesystem::path> SmfFilePath;
 	FluidSynthMode FluidSynthMode;
+	bool Unsafe = false;
     public:
-	const std::unordered_map<RenderApi, std::string> RenderLibName = {
-	    {CURSES, "curses"},
-	    {TEXT, "PrintMessage"}
-	};
-
 	std::vector<std::filesystem::path> getSoundFontsPath() const { return SoundFontsPath; }
 	std::vector<std::filesystem::path> getSmfFilePath() const { return SmfFilePath; }
 
+	std::string getUiToolKit() const { return UiToolKit; }
 	std::string getMidiDriver() const { return MidiDriver; }
 	bool getAudioEnableFlag() const { return EnableAudio; }
 	std::string getAudioDriver() const { return AudioDriver; }
 
-	enum RenderApi getRenderingApi() const { return RenderingApi; }
+	std::string getRenderingApi() const { return RenderingApi; }
 	void setFramePerSecond(float fps) { FramePerSecond = fps; }
 	float getFramePerSecond() const { return FramePerSecond; }
 	enum FluidSynthMode getFluidSynthMode() const { return FluidSynthMode; }
-	
+	bool getUnsafeMode() const { return Unsafe; }
+
 	Option(int argc, char** argv);
     }; // class Option
 

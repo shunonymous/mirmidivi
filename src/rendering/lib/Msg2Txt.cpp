@@ -35,9 +35,14 @@ namespace mirmidivi
 	int ch;
 	std::stringstream Text;
 
-	type = Synth->getType();
-	ch = Synth->getChannel();
-
+	if(Synth->getEvent() != nullptr)
+	{
+	    type = Synth->getType();
+	    ch = Synth->getChannel();
+	} else {
+	    type = 0;
+	    ch = 0;
+	}
 	switch(type)
 	{
 	case NOTE_ON:
