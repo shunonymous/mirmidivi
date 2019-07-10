@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include <filesystem>
 
+#include "dlldr.hpp"
+
 namespace mirmidivi
 {
     enum FluidSynthMode{SYNTH, PLAYER};
@@ -39,36 +41,47 @@ namespace mirmidivi
 	"glfw"
     };
 
+    // Dynamic loading Libraries
+    const auto dlldr_mode =
+	dlldr::shared_library::add_decorations +
+	dlldr::shared_library::search_system_directories;
+
     // Store options from command-line args (or other)
     class Option
     {
     private:
-	bool EnableAudio = false;
 	float FramePerSecond = 60.0;
-	std::string UiToolKit = UiToolKitList[0].data();
-	// int VertexResolution;
-	// int HorizonalResolution;
-	// bool FullScreen;
+
+	// Fluidsynth driver
 	std::string AudioDriver;
 	std::string MidiDriver;
-	std::string RenderingApi = RenderingLibrariesList[0].data();
+
+	// Misc dor fluidsynth
+	bool EnableAudio = false;
 	std::vector<std::filesystem::path> SoundFontsPath;
 	std::vector<std::filesystem::path> SmfFilePath;
 	FluidSynthMode FluidSynthMode;
+
+	// Library for loading
+	std::string RenderingApi = RenderingLibrariesList[0].data();
+	std::string UiToolKit = UiToolKitList[0].data();
+
+	// Library uncheck flag
 	bool Unsafe = false;
     public:
+	float getFramePerSecond() const { return FramePerSecond; }
+
+	std::string getAudioDriver() const { return AudioDriver; }
+	std::string getMidiDriver() const { return MidiDriver; }
+
+	bool getAudioEnableFlag() const { return EnableAudio; }
 	std::vector<std::filesystem::path> getSoundFontsPath() const { return SoundFontsPath; }
 	std::vector<std::filesystem::path> getSmfFilePath() const { return SmfFilePath; }
-
-	std::string getUiToolKit() const { return UiToolKit; }
-	std::string getMidiDriver() const { return MidiDriver; }
-	bool getAudioEnableFlag() const { return EnableAudio; }
-	std::string getAudioDriver() const { return AudioDriver; }
+	enum FluidSynthMode getFluidSynthMode() const { return FluidSynthMode; }
 
 	std::string getRenderingApi() const { return RenderingApi; }
-	void setFramePerSecond(float fps) { FramePerSecond = fps; }
-	float getFramePerSecond() const { return FramePerSecond; }
-	enum FluidSynthMode getFluidSynthMode() const { return FluidSynthMode; }
+	std::string getUiToolKit() const { return UiToolKit; }
+
 	bool getUnsafeMode() const { return Unsafe; }
 
 	Option(int argc, char** argv);

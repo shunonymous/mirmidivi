@@ -36,27 +36,31 @@ void Quit(int Signal)
 
 int main(int argc, char** argv)
 {
-    using namespace mirmidivi;
-    using namespace dlldr;
-    Option Options(argc, argv);
+    try
+    {
+	using namespace mirmidivi;
+	using namespace dlldr;
+	Option Options(argc, argv);
 
-    // Signal handling
-    QuitFlag = false;
-    std::signal(SIGINT, Quit);
+	// Signal handling
+	QuitFlag = false;
+	std::signal(SIGINT, Quit);
 
-    // When not unsafe mode, GUI Toolkit API must listed
-    if(!Options.getUnsafeMode() and
-       std::find(UiToolKitList.begin(), UiToolKitList.end(), Options.getUiToolKit()) == UiToolKitList.end())
-	throw "mirmidivi has not " + Options.getRenderingApi();
+	bool LibraryNotFound = std::find(UiToolKitList.begin(), UiToolKitList.end(), Options.getUiToolKit()) == UiToolKitList.end();
+	// When not unsafe mode, GUI Toolkit API must listed
+	if(!Options.getUnsafeMode() and LibraryNotFound)
+	{
+	    throw "mirmidivi has not " + Options.getRenderingApi();
+	}
     
-    // Dynamic loading Libraries
-    const auto dlldr_mode =
-	shared_library::add_decorations +
-	shared_library::search_system_directories;
-
-    // Load UI ToolKit
-    shared_library UiToolKitLibrary("mirmidivi_" + Options.getUiToolKit(), dlldr_mode);
-    auto UiToolKit = UiToolKitLibrary.get_if<void(Option&, bool&)>("InitUiToolKit");
-    UiToolKit(std::ref(Options), std::ref(QuitFlag));
-    std::cout << "End of mirmidivi" << std::endl;
+	// Load UI ToolKit
+	shared_library UiToolKitLibrary("mirmidivi_" + Options.getUiToolKit(), dlldr_mode);
+	auto UiToolKit = UiToolKitLibrary.get_if<void(Option&, bool&)>("InitUiToolKit");
+	UiToolKit(std::ref(Options), std::ref(QuitFlag));
+	std::cout << "End of mirmidivi" << std::endl;
+    }
+    catch(std::exception& e)
+    {
+	std::cerr << "Error:" << e.what() << std::endl;
+    }
 }

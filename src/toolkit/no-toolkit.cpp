@@ -33,16 +33,14 @@ extern "C" void InitUiToolKit(mirmidivi::Option& Options, bool& QuitFlag)
     using namespace mirmidivi;
     using namespace dlldr;
 
+    bool LibraryNotFound = std::find(RenderingLibrariesList.begin(), RenderingLibrariesList.end(), Options.getRenderingApi()) == RenderingLibrariesList.end();
+
     // When not unsafe mode, GUI Toolkit API must listed
-    if(!Options.getUnsafeMode() and
-       std::find(RenderingLibrariesList.begin(), RenderingLibrariesList.end(), Options.getRenderingApi()) == RenderingLibrariesList.end())
+    if(!Options.getUnsafeMode() and LibraryNotFound)
+    {
 	throw "mirmidivi has not " + Options.getRenderingApi();
-
-    // Dynamic loading Libraries
-    const auto dlldr_mode =
-	shared_library::add_decorations +
-	shared_library::search_system_directories;
-
+    }
+    
     std::thread RenderingThread;
     shared_library RenderingLibrary("mirmidivi_" + Options.getRenderingApi(), dlldr_mode);
     if(Options.getFluidSynthMode() == SYNTH)

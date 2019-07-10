@@ -67,7 +67,7 @@ namespace mirmidivi
 	    std::lock_guard<std::mutex> Locker(synth->mtx_callback);
 	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
 	    synth->setEvent(Event);
-	    for(const auto& f : synth->getTasks())
+	    for(const auto& f : synth->getCallbackTasks())
 		f.second(sysclk::now() - synth->getBeginTimePoint(), Event);
 	    return 0;
 	}
@@ -112,6 +112,7 @@ namespace mirmidivi
 
 	Synth::~Synth()
 	{
+	    // Wait for ending call-back function(s)
 	    std::lock_guard<std::mutex> Locker(mtx_callback);
 	}
 

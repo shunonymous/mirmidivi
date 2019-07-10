@@ -25,7 +25,7 @@
 
 namespace mirmidivi
 {
-    std::string Msg2Txt(const std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth);
+    std::string Msg2Txt(const std::shared_ptr<mirmidivi::fluidsynth::Synth> Synth);
 } // namespace mirmidivi
 
 #endif

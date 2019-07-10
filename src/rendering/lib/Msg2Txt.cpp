@@ -26,9 +26,8 @@
 
 namespace mirmidivi
 {
-    std::string Msg2Txt(const std::shared_ptr<mirmidivi::fluidsynth::Synth>& Synth)
+    std::string Msg2Txt(const std::shared_ptr<mirmidivi::fluidsynth::Synth> Synth)
     {
-	const int line_length = 60;
 	const int type_length = 20;
 
 	int type;

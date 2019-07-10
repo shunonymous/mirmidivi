@@ -35,6 +35,7 @@ namespace mirmidivi
 	int Type = fluidsynth::Synth::getType(ev);
 	int Ch = fluidsynth::Synth::getChannel(ev);
 	int Scale = fluidsynth::Synth::getKey(ev);
+
 	if(Type == NOTE_ON)
 	{
 	    Note Note;
@@ -44,7 +45,8 @@ namespace mirmidivi
 	    Note.EndTime = NowDuration;
 	    Note.Ringing = true;
 	    Notes.push_back(Note);
-	} else if(Type == NOTE_OFF)
+	}
+	else if(Type == NOTE_OFF)
 	{
 	    bool Paired = false;
 	    if(!Notes.empty())
@@ -55,13 +57,18 @@ namespace mirmidivi
 			Notes[i].Ringing = false;
 			Paired = true;
 		    }
-	} else if(Type == ALL_NOTES_OFF)
+	}
+	else if(Type == ALL_NOTES_OFF)
+	{
 	    for(auto& Note : Notes)
+	    {
 		if(Note.Ringing)
 		{
 		    Note.EndTime = NowDuration;
 		    Note.Ringing = false;
 		}
+	    }
+	}
 	return 0;
     }
 
@@ -74,24 +81,23 @@ namespace mirmidivi
 	    if(Note.Ringing)
 		Note.EndTime = NowDuration;
 
-	    if(Note.EndTime >= Begin and
-	       Note.BeginTime <= End)
+	    if(Begin <= Note.EndTime and Note.BeginTime <= End)
 		Result.push_back(Note);		
 	}
 
 	return Result;
     }
 
-    PianoRoll::PianoRoll(const std::shared_ptr<mirmidivi::fluidsynth::Synth>& synth)
+    PianoRoll::PianoRoll(const std::shared_ptr<mirmidivi::fluidsynth::Synth> synth)
     {
 	Synth = synth;
 	std::function<int(sysclk::duration, fluid_midi_event_t*)> func = std::bind(structPianoRoll, std::placeholders::_1, std::placeholders::_2, std::ref(Notes));
-	task_id = Synth->addTask(func);
+	task_id = Synth->addCallbackTask(func);
 	Notes.reserve(10'000);
     }
 
     PianoRoll::~PianoRoll()
     {
-	Synth->dropTask(task_id);
+	Synth->dropCallbackTask(task_id);
     }
 }

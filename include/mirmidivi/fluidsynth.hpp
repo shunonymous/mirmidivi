@@ -44,30 +44,40 @@ namespace mirmidivi
 	class Synth
 	{
 	private:
-	    fluid_settings_t* settings;
-	    static std::vector<fluid_synth_t*> synth_callback; // due to callback
+	    // Need for callback
+	    static std::vector<fluid_synth_t*> synth_callback;
+	    static std::vector<fluid_midi_event_t*> event_callback;
 	    static int synth_count;
+	    int synth_id;
+
+	    // Plain fluidsynth pointers (and more)
+	    fluid_settings_t* settings;
 	    fluid_synth_t* synth;
 	    fluid_midi_driver_t* midi_driver;
 	    fluid_audio_driver_t* audio_driver;
-	    int synth_id;
-	    int sound_font_id;
-	    static std::vector<fluid_midi_event_t*> event_callback; // due to callback
 	    fluid_midi_event_t* event;
+	    int sound_font_id;
+
+	    // Tasks in callback when received message
 	    std::map<int, Task> tasks;
 	    int task_id_count = 0;
+
+	    // Time-point of started fluidsynth
 	    sysclk::time_point begin;
 	public:
 	    std::mutex mtx_callback;
+
+	    // For launch FluidSynth
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
 	    void launchMidiDriver(const Option& Options);
 	    void launchAudioDriver(const Option& Options);
 
+	    // Get plain pointer of fluidsynth
 	    fluid_midi_event_t* getEvent() const { return event; }
-	    void setEvent(fluid_midi_event_t* e) { event = e; }
-	    
 	    fluid_synth_t* getSynth() const { return synth; }
+
+	    void setEvent(fluid_midi_event_t* e) { event = e; }
 
 	    // Get message statuses
 	    int getType() const { return fluid_midi_event_get_type(getEvent()); }
@@ -91,14 +101,14 @@ namespace mirmidivi
 	    // Hendle function calling when received message
 	    static int handleEvent(void* Data, fluid_midi_event_t* Event);
 
-	    // Tasks
-	    int addTask(Task t) {
+	    // Add tasks when call
+	    int addCallbackTask(Task t) {
 		tasks.insert({task_id_count, t});
 		return task_id_count++;
 	    }
-	    void dropTask(int id) { tasks.erase(id); }
-	    Task getTask(int id) { return tasks.at(id); }
-	    std::map<int, Task> getTasks() { return tasks; }
+	    void dropCallbackTask(int id) { tasks.erase(id); }
+	    Task getCallbackTask(int id) { return tasks.at(id); }
+	    std::map<int, Task> getCallbackTasks() { return tasks; }
 
 	    sysclk::time_point getBeginTimePoint() { return begin; };
 
@@ -109,8 +119,6 @@ namespace mirmidivi
 
 	    Synth& operator()(const Option& Options) { return *this; }
 	    Synth& operator=(Synth&& Synth) { return *this; }
-
-	    friend Player;
 	};
 
 	class Player
@@ -118,11 +126,11 @@ namespace mirmidivi
 	private:
 	    std::shared_ptr<Synth> Synth;
 	    void launchSmfPlayer(const Option& Options);
-
 	    fluid_player_t* smf_player;
 	public:
 	    std::shared_ptr<class Synth> getSynth() { return Synth; }
 
+	    // Player control interface
 	    void addToQueue(std::filesystem::path File) { fluid_player_add(smf_player, File.c_str()); }
 	    void play() { fluid_player_play(smf_player); }
 	    void stop() { fluid_player_stop(smf_player); }

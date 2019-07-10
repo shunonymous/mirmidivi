@@ -61,7 +61,7 @@ namespace mirmidivi
 	    return Notes;
 	};
 
-	PianoRoll(const std::shared_ptr<mirmidivi::fluidsynth::Synth>& synth);
+	PianoRoll(const std::shared_ptr<mirmidivi::fluidsynth::Synth> synth);
 	PianoRoll(){}
 	~PianoRoll();
     };

@@ -116,16 +116,16 @@ namespace mirmidivi
 	    if(EndPoint > Screen.Size.x)
 		EndPoint = Screen.Size.x;
 
-	    std::string prt;
-	    prt.append(EndPoint - BeginningPoint, '|');
+	    std::string PrintStr;
+	    PrintStr.append(EndPoint - BeginningPoint, '|');
 
-	    if(!prt.empty() and
+	    if(!PrintStr.empty() and
 	       (0 <= VertexPosition) and (VertexPosition < Screen.Size.y))
 	    {
 		move(VertexPosition,
 		     BeginningPoint);
 		attrset(COLOR_PAIR(Note.Ch + 1));
-		printw(prt.c_str());
+		printw(PrintStr.c_str());
 	    }
 	}
 
