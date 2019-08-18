@@ -29,16 +29,10 @@ set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
   )
 
-message("${CMAKE_CXX_FLAGS_DEBUG}")
-message("${CMAKE_CXX_COMPILER_ID}")
-
-
 # Warning
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra --pedantic-errors")
 endif()
-
-message("${CMAKE_CXX_FLAGS_DEBUG}")
 
 ### Set depended libraries
 # Thread
@@ -64,3 +58,7 @@ include_directories(
 # Build
 add_subdirectory(src/)
 
+# test
+if(NOT MIRMIDIVI_NO_TEST)
+  add_subdirectory(test/)
+endif()
