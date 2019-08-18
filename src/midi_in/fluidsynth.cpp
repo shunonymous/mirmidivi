@@ -18,22 +18,21 @@
 
 #include <string>
 #include <iostream>
+#include <map>
 #include <mutex>
+#include <random>
+#include <cmath>
 
 #include <fluidsynth.h>
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/fluidsynth.hpp"
+#include "mirmidivi/sleep.hpp"
 
 namespace mirmidivi
 {
     namespace fluidsynth
     {
-	// Initialize static values.
-	std::vector<fluid_synth_t*> Synth::synth_callback = {};
-	std::vector<fluid_midi_event_t*> Synth::event_callback = {};
-	int Synth::synth_count = 0;
-
 	void Synth::mkSettings(const Option& Options)
 	{
 	    // Settings for fluidsynth
@@ -64,7 +63,7 @@ namespace mirmidivi
 	int Synth::handleEvent(void* Data, fluid_midi_event_t* Event)
 	{
 	    Synth* synth = static_cast<Synth*>(Data);
-	    std::lock_guard<std::mutex> Locker(synth->mtx_callback);
+	    std::lock_guard<std::timed_mutex> Locker(synth->mtx_callback);
 	    fluid_synth_handle_midi_event(synth->getSynth(), Event);
 	    synth->setEvent(Event);
 	    for(const auto& f : synth->getCallbackTasks())
@@ -72,7 +71,7 @@ namespace mirmidivi
 	    return 0;
 	}
 
-	void Synth::launchMidiDriver(const Option& Options)
+	void Synth::launchMidiDriver()
 	{
 	    midi_driver = new_fluid_midi_driver(settings, handleEvent, this);
 	}
@@ -89,18 +88,16 @@ namespace mirmidivi
 
 	Synth::Synth(const Option& Options)
 	{
-	    synth_id = synth_count++;
-	    event_callback.push_back(new_fluid_midi_event());
-	    event = event_callback[synth_id];
-	    
+	    event = new_fluid_midi_event();
+
 	    // Settings part
 	    mkSettings(Options);
-	    synth_callback.push_back(new_fluid_synth(settings));
-	    synth = synth_callback[synth_id];
+	    // synth_callback.insert({synth_id, new_fluid_synth(settings)});
+	    synth = new_fluid_synth(settings);
 
 	    // Midi Driver
 	    if(Options.getFluidSynthMode() == SYNTH)
-		launchMidiDriver(Options);
+		launchMidiDriver();
 
 
 	    // Audio Driver
@@ -112,8 +109,7 @@ namespace mirmidivi
 
 	Synth::~Synth()
 	{
-	    // Wait for ending call-back function(s)
-	    std::lock_guard<std::mutex> Locker(mtx_callback);
+	    std::cout << "Synth destructed" << std::endl;
 	}
 
 	void Player::launchSmfPlayer(const Option& Options)

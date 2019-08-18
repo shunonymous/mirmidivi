@@ -44,12 +44,6 @@ namespace mirmidivi
 	class Synth
 	{
 	private:
-	    // Need for callback
-	    static std::vector<fluid_synth_t*> synth_callback;
-	    static std::vector<fluid_midi_event_t*> event_callback;
-	    static int synth_count;
-	    int synth_id;
-
 	    // Plain fluidsynth pointers (and more)
 	    fluid_settings_t* settings;
 	    fluid_synth_t* synth;
@@ -65,12 +59,12 @@ namespace mirmidivi
 	    // Time-point of started fluidsynth
 	    sysclk::time_point begin;
 	public:
-	    std::mutex mtx_callback;
+	    std::timed_mutex mtx_callback;
 
 	    // For launch FluidSynth
 	    void mkSettings(const Option& Options);
 	    void launchSmfPlayer(const Option& Options);
-	    void launchMidiDriver(const Option& Options);
+	    void launchMidiDriver();
 	    void launchAudioDriver(const Option& Options);
 
 	    // Get plain pointer of fluidsynth
