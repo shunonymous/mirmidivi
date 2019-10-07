@@ -42,10 +42,8 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif()
 
 # Boost
-set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREAD ON)
-set(Boost_USE_STATIC_RUNTIME ON)
-find_package(Boost 1.32 COMPONENTS program_options)
+find_package(Boost REQUIRED program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ### External projects are here
