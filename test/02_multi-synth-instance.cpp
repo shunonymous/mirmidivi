@@ -1,5 +1,5 @@
 /*
- * 01_launch-many-times.cpp
+ * 02_multi-synth-instance.cpp
  *
  * Copyright (C) 2019 Shun Terabayashi <shunonymous@gmail.com>
  * 
@@ -24,6 +24,7 @@
 
 #include "mirmidivi/mirmidivi.hpp"
 #include "mirmidivi/sleep.hpp"
+#include "mirmidivi/fluidsynth.hpp"
 
 #include "dlldr.hpp"
 
@@ -36,40 +37,19 @@ void Quit(int Signal)
     std::cout << "Interrupt." << std::endl;
 }
 
-void DelayFlagSwitch(bool& Flag)
-{
-    using namespace mirmidivi;
-    Flag = false;
-    sleep(2s);
-    Flag = true;
-}
-
 int main(int argc, char** argv)
 {
     try
     {
 	using namespace mirmidivi;
 	using namespace dlldr;
+	Option Options(argc, argv);
+
+	std::vector<std::shared_ptr<fluidsynth::Synth>> Synthes;
 	for(int i = 0; i < 10; ++i)
 	{
-	    std::cout << "Passed " << i << "time(s)." << std::endl;
-	    Option Options(argc, argv);
-
-	    // Signal handling
-	    QuitFlag = false;
-	    std::signal(SIGINT, Quit);
-	    std::thread DelayFlagSwitchThread(DelayFlagSwitch, std::ref(QuitFlag));
-
-	    bool LibraryNotFound = std::find(UiToolKitList.begin(), UiToolKitList.end(), Options.getUiToolKit()) == UiToolKitList.end();
-	    // When not unsafe mode, GUI Toolkit API must listed
-	    if(!Options.getUnsafeMode() and LibraryNotFound)
-		throw "mirmidivi has not " + Options.getRenderingApi();
-    
-	    // Load UI ToolKit
-	    shared_library UiToolKitLibrary("mirmidivi_" + Options.getUiToolKit(), dlldr_mode);
-	    auto UiToolKit = UiToolKitLibrary.get_if<void(Option&, bool&)>("InitUiToolKit");
-	    UiToolKit(std::ref(Options), std::ref(QuitFlag));
-	    DelayFlagSwitchThread.join();
+	    Synthes.push_back(std::shared_ptr<fluidsynth::Synth>(new fluidsynth::Synth(Options)));
+	    sleep(0.5s);
 	}
     }
     catch(std::exception& e)
